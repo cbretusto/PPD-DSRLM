@@ -1,0 +1,39 @@
+html{
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+    font-size: 0.9375rem; /*15px*/
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    color: #4b545c;
+    font-family: 'Poppins', sans-serif !important;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.theme-color{
+    color: #4b545c;
+}
+
+.theme-color-bg{
+    background: #4b545c;
+}
+
+.modal-xl-custom{
+    min-width: 95% !important;
+    width: 95% !important;
+}
+
+.bg-success-custom{
+    background: #159957;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #829bb4, #4ccc8c);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #4c9467, #2f8b5d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
