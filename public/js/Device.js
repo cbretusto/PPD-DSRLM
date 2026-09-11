@@ -49,6 +49,7 @@ function GetDeviceInfoByIdToEdit(deviceId){
             if(requestDeviceInfo.length > 0){
                 $("#txtDeviceCode").val(requestDeviceInfo[0].device_code);
                 $("#txtDeviceName").val(requestDeviceInfo[0].device_name);
+                $("#txtToolLife").val(requestDeviceInfo[0].tool_life);
             }
         },
         errorCallback: () => {

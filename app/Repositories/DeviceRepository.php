@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Device;
+use App\Models\RapidDieSet;
 use App\Interfaces\DeviceInterface;
 
 class DeviceRepository implements DeviceInterface
@@ -11,13 +12,18 @@ class DeviceRepository implements DeviceInterface
         return Device::where('logdel', 0)->get();
     }
 
+    public function getAllDeviceHistoryData(){
+        return RapidDieSet::all();
+    }
+
     public function deviceCreateUpdateRepository(?string $deviceId, array $data){
         $deviceData = [
-            'device_code'     => $data['device_code'],
-            'device_name'     => $data['device_name'],
+            'device_code'   => $data['device_code'],
+            'device_name'   => $data['device_name'],
+            'tool_life'     => $data['tool_life'],
         ];
 
-        if (empty($deviceId)) {
+        if(empty($deviceId)){
             $deviceData['created_by'] = $data['employee_no'];
             return Device::create($deviceData);
         }
@@ -39,7 +45,7 @@ class DeviceRepository implements DeviceInterface
         return $query->exists();
     }
 
-    public function getDeviceInfoById($deviceId){
+    public function getDeviceInfoByIdRepository($deviceId){
         return Device::where('id', $deviceId)->where('logdel', 0)->get();
     }
 

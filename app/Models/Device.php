@@ -11,6 +11,7 @@ class Device extends Model
     protected $connection = 'mysql';
     protected $fillable = [
         'device_code',
-        'device_name'
+        'device_name',
+        'tool_life'
     ];
 }

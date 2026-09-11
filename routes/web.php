@@ -63,4 +63,5 @@ Route::controller(DeviceController::class)->group(function () {
     Route::post('/device_create_update', 'deviceCreateUpdate')->name('device_create_update');
     Route::get('/get_device_info_by_id', 'getDeviceInfoById')->name('get_device_info_by_id');
     Route::post('/change_device_status', 'changeDeviceStatus')->name('change_device_status');
+    Route::get('/view_device_history', 'viewDeviceHistory')->name('view_device_history');
 });

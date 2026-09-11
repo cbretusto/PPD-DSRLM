@@ -16,13 +16,16 @@ class DeviceController extends Controller
     }
 
     public function viewDevice(Request $request){
-        $currentDeviceId = session('rapidx_device_id');
-        return $this->deviceService->getDeviceForDataTable($currentDeviceId);
+        return $this->deviceService->getDeviceForDataTable($request);
+    }
+
+    public function viewDeviceHistory(Request $request){
+        return $this->deviceService->getDeviceHistoryForDataTable($request);
     }
 
     public function deviceCreateUpdate(DeviceRequest $request){
         $deviceId = $request->input('device_id');
-        $data = $request->only(['device_code', 'device_name']);
+        $data = $request->only(['device_code', 'device_name', 'tool_life']);
         $employeeNo = session('rapidx_employee_number');
 
         $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $employeeNo);
@@ -31,7 +34,7 @@ class DeviceController extends Controller
     }
 
     public function getDeviceInfoById(Request $request){
-        $deviceInfo = $this->deviceService->getDeviceInfoById($request->deviceId);
+        $deviceInfo = $this->deviceService->getDeviceInfoByIdService($request->deviceId);
 
         return response()->json(['requestDeviceInfo' => $deviceInfo]);
     }

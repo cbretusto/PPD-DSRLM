@@ -121,6 +121,20 @@
                                 <input type="text" name="device_name" id="txtDeviceName" class="form-control bg-light border-start-0" autocomplete="off">
                             </div>
                         </div>
+
+                        <!-- Tool Life -->
+                        <div class="mb-2">
+                            <label for="txtToolLife"class="form-label fw-semibold">
+                                Tool Life:
+                            </label>
+
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-scale-balanced text-dark"></i>
+                                </span>
+                                <input type="text" name="tool_life" id="txtToolLife" class="form-control bg-light border-start-0" autocomplete="off">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Footer -->
@@ -220,7 +234,7 @@
                             <div>
                                 <h5 class="mb-1 fw-bold" id="h4DeviceHistoryTitle">
                                     Device History
-                                    <input type="text" class="input_hidden1" name="get_device_code" placeholder="Device Code" id="txtGetDeviceCode" readonly>
+                                    {{-- <input type="text" class="input_hidden1" name="get_device_code" placeholder="Device Code" id="txtGetDeviceCode" readonly> --}}
                                 </h5>
 
                                 <small class="opacity-75">
@@ -236,60 +250,166 @@
                 <!-- Body -->
                 <div class="card-body p-4">
                     <!-- Filters -->
-                    <div class="row align-items-end g-3 mb-4">
-                        <!-- View Type -->
-                        <div class="col-md-3">
-                            <label for="historyViewType" class="form-label fw-semibold mb-1">View Type</label>
-
-                            <select class="form-select" id="historyViewType">
-                                <option value="reset" selected>Reset</option>
-                                <option value="summary">Summary</option>
-                            </select>
-                        </div>
-
-                        <!-- Reset Filters -->
-                        <div id="historyResetFilters" class="col-md-7">
+                    <div class="card border-0 shadow-sm bg-light mb-4">
+                        <div class="card-body p-3">
                             <div class="row align-items-end g-3">
-                                <!-- Date From -->
-                                <div class="col-md-4">
-                                    <label for="historyDateFrom" class="form-label fw-semibold mb-1">Date From</label>
-                                    <input type="date" class="form-control reset-value" id="historyDateFrom">
+                                <!-- View Type -->
+                                <div class="col-md-3">
+                                    <label for="historyViewType" class="form-label fw-semibold mb-1">
+                                        View Type
+                                    </label>
+
+                                    <select class="form-select" id="historyViewType">
+                                        <option value="reset" selected>Reset</option>
+                                        <option value="summary">Summary</option>
+                                    </select>
                                 </div>
 
-                                <!-- Date To -->
-                                <div class="col-md-4">
-                                    <label for="historyDateTo" class="form-label fw-semibold mb-1">Date To</label>
-                                    <input type="date" class="form-control reset-value" id="historyDateTo">
+                                <!-- Reset Filters -->
+                                <div id="historyResetFilters" class="col-md-7">
+                                    <div class="row align-items-end g-3">
+                                        <!-- Date From -->
+                                        <div class="col-md-4">
+                                            <label for="historyDateFrom" class="form-label fw-semibold mb-1">
+                                                Date From
+                                            </label>
+                                            <input type="date"
+                                                class="form-control reset-value"
+                                                id="historyDateFrom">
+                                        </div>
+
+                                        <!-- Date To -->
+                                        <div class="col-md-4">
+                                            <label for="historyDateTo" class="form-label fw-semibold mb-1">
+                                                Date To
+                                            </label>
+                                            <input type="date"
+                                                class="form-control reset-value"
+                                                id="historyDateTo">
+                                        </div>
+
+                                        <!-- Search -->
+                                        <div class="col-md-4">
+                                            <button type="button"
+                                                    class="btn btn-dark w-100"
+                                                    id="buttonSearchHistory">
+                                                <i class="fa fa-search me-1"></i>
+                                                Search
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Search -->
-                                <div class="col-md-4">
-                                    <button type="button" class="btn btn-dark w-100" id="buttonSearchHistory">
-                                        <i class="fa fa-search me-1"></i>Search
+                                <!-- Summary Filters -->
+                                <div id="historySummaryFilters" class="col-md-4 d-none">
+                                    <label for="historySummaryType" class="form-label fw-semibold mb-1">
+                                        Summary Type
+                                    </label>
+
+                                    <select class="form-select reset-value" id="historySummaryType">
+                                        <option value="" selected>Select Summary</option>
+                                        <option value="year">Year</option>
+                                        <option value="month">Month</option>
+                                    </select>
+                                </div>
+
+                                <!-- Reset Button -->
+                                <div id="historyResetButton" class="col-md-2">
+                                    <button type="button"
+                                            class="btn btn-danger w-100"
+                                            id="buttonResetHistoryFilter">
+                                        <i class="fa fa-refresh me-1"></i>
+                                        Reset
                                     </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <hr>
 
-                        <!-- Summary Filters -->
-                        <div id="historySummaryFilters" class="col-md-4 d-none">
-                            <label for="historySummaryType"class="form-label fw-semibold mb-1">Summary Type</label>
-
-                            <select class="form-select reset-value" id="historySummaryType">
-                                <option value="" selected>Select Summary</option>
-                                <option value="year">Year</option>
-                                <option value="month">Month</option>
-                            </select>
+                    <!-- Device Information Summary -->
+                    <div class="row g-3 mb-4">
+                        <!-- Device Name -->
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100 bg-light">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="bg-dark bg-opacity-10 text-dark rounded-3 p-3 me-3">
+                                        <i class="fa fa-wrench fs-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <small class="text-muted d-block fw-semibold">
+                                            Device Name
+                                        </small>
+                                        <div class="fw-bold text-dark text-truncate"
+                                            id="historyDeviceName">
+                                            —
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Device Code -->
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100 bg-light">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="bg-dark bg-opacity-10 text-dark rounded-3 p-3 me-3">
+                                        <i class="fa fa-barcode fs-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <small class="text-muted d-block fw-semibold">
+                                            Device Code
+                                        </small>
+                                        <div class="fw-bold text-dark text-truncate"
+                                            id="historyDeviceCode">
+                                            —
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <!-- Reset Button -->
-                        <div id="historyResetButton" class="col-md-auto ms-md-auto">
-                            <button type="button" class="btn btn-danger" id="buttonResetHistoryFilter">
-                                <i class="fa fa-refresh me-1"></i>Reset
-                            </button>
+                        <!-- Tool Life -->
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100 bg-light">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="bg-dark bg-opacity-10 text-dark rounded-3 p-3 me-3">
+                                        <i class="fas fa-scale-balanced fs-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <small class="text-muted d-block fw-semibold">
+                                            Tool Life
+                                        </small>
+                                        <div class="fw-bold text-dark">
+                                            <span id="historyToolLife">0</span>
+                                            <!-- <small class="text-muted fw-normal">pcs</small> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Quantity -->
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm h-100 bg-light">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="bg-dark bg-opacity-10 text-dark rounded-3 p-3 me-3">
+                                        <i class="fa fa-cubes fs-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <small class="text-muted d-block fw-semibold">
+                                            Total Quantity
+                                        </small>
+                                        <div class="fw-bold text-dark">
+                                            <span id="historyTotalQuantity">0</span>
+                                            <!-- <small class="text-muted fw-normal">pcs</small> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <hr>
 
                     <!-- Table -->
                     <div class="table-responsive">
@@ -317,104 +437,6 @@
     </div>
     <!-- Device History Modal End -->
 
-    {{-- <!-- Device History Modal Start -->
-    <div class="modal fade" id="modalDeviceHistory" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl-custom">
-            <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-
-                <!-- Top Header -->
-                <div class="bg-dark bg-gradient text-white p-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3 p-3">
-                                <i class="fa fa-history fs-4"></i>
-                            </div>
-
-                            <div>
-                                <h5 class="mb-1 fw-bold" id="h4DeviceHistoryTitle">
-                                    Device History
-                                </h5>
-
-                                <small class="opacity-75">
-                                    View device history
-                                </small>
-                            </div>
-                        </div>
-
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Body -->
-                <div class="card-body p-4">
-                    <!-- Filters -->
-                    <div class="row align-items-end justify-content-between g-3 mb-4">
-                        <!-- Date From -->
-                        <div class="col-md-3">
-                            <label for="historyDateFrom" class="form-label fw-semibold mb-1">
-                                Date From
-                            </label>
-
-                            <input type="date" class="form-control" id="historyDateFrom">
-                        </div>
-
-                        <!-- Date To -->
-                        <div class="col-md-3">
-                            <label for="historyDateTo" class="form-label fw-semibold mb-1">
-                                Date To
-                            </label>
-
-                            <input type="date" class="form-control" id="historyDateTo">
-                        </div>
-
-                        <!-- Search -->
-                        <div class="col-md-2">
-                            <button type="button" class="btn btn-dark btn w-100" id="buttonSearchHistory">
-                                <i class="fa fa-search me-1"></i>
-                                Search
-                            </button>
-                        </div>
-
-                        <!-- Reset -->
-                        <div class="col-md-auto ms-md-auto">
-                            <button type="button" class="btn btn-danger" id="buttonResetHistoryFilter">
-                                <i class="fa fa-refresh me-1"></i>
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Table -->
-                    <div class="table-responsive">
-
-                        <table id="tableDeviceHistory" class="table table-bordered table-hover nowrap w-100">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">Die-No</th>
-                                    <th rowspan="2">Die-set <br>Receive Date</th>
-                                    <th rowspan="2">Tool Life <br>(pcs)</th>
-                                    <th rowspan="2">YEC <br>Sales Qty. (pcs)</th>
-                                    <th rowspan="2">YEC + PMI <br>Sales Qty. (pcs)</th>
-                                    <th colspan="2" class="text-center">
-                                        Die-set Age
-                                    </th>
-                                </tr>
-
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Months</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Device History Modal End --> --}}
-
-
 @endsection
 
 <!-- JS CONTENT --}} -->
@@ -422,6 +444,9 @@
     <script type="text/javascript">
         let dataTableDevice
         let dataTableDeviceHistory
+        let deviceCode
+        let deviceName
+        let toolLife
 
         $(document).ready(function () {
             resetModalFormValues();
@@ -498,8 +523,24 @@
             // ==================================================================================================
             $(document).on('click', '.actionDeviceHistory', function(e){
                 e.preventDefault();
-                let deviceCode = $(this).attr('device-code');
-                    $("#txtGetDeviceCode").val(deviceCode);
+
+                deviceCode = $(this).attr('device-code');
+                deviceName = $(this).attr('device-name');
+                toolLife = $(this).attr('tool-life');
+                deviceTotalQty = $(this).attr('device-total_qty');
+
+                console.log('deviceCode', deviceCode)
+                console.log('deviceName', deviceName)
+                console.log('toolLife', toolLife)
+                console.log('deviceTotalQty', deviceTotalQty)
+
+                $("#historyDeviceName").text(deviceName);
+                $("#historyDeviceCode").text(deviceCode);
+                $("#historyToolLife").text(Number(toolLife || 0).toLocaleString());
+                $("#historyTotalQuantity").text(Number(deviceTotalQty || 0).toLocaleString());
+
+                // $("#txtGetDeviceCode").val(deviceCode);
+                // GetDeviceHistory(deviceCode);
             });
 
             $('#historyViewType').on('change', function () {
@@ -537,6 +578,39 @@
                 const summaryType = $(this).val();
                 console.log('Summary Type:', summaryType);
             });
+
+            dataTableDeviceHistory = $("#tableDeviceHistory").DataTable({
+                "processing"    : false,
+                "serverSide"    : true,
+                "responsive"    : true,
+                "order"         : [[1,'desc'],[3, "asc"]],
+                "language"      : {
+                    "info"      : "Showing _START_ to _END_ of _TOTAL_ Device Record",
+                    "lengthMenu": "Show _MENU_ Device Record",
+                },
+                "ajax"          : {
+                    url         : "view_device_history",
+                },
+                "data": {
+                    device_code : deviceCode
+                },
+                "columns":[
+                    { "data" : "action", orderable:false, searchable:false},
+                    { "data" : "status"},
+                    { "data" : "device_code"},
+                    { "data" : "device_name"},
+                    { "data" : "tool_life"},
+                    { "data" : "total_qty"},
+                    { "data" : "total_qty"},
+                ],
+                "columnDefs": [
+                    {
+                        "targets": "_all",
+                        "className": "text-start"
+                    }
+                ]
+            });
+
         });
     </script>
 @endsection

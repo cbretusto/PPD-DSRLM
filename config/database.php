@@ -123,6 +123,26 @@ return [
             ]) : [],
         ],
 
+        'mysql_rapid_ppd' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_RAPID_PPD', '192.168.3.235'),
+            'port' => env('DB_PORT_RAPID_PPD', '3306'),
+            'database' => env('DB_DATABASE_RAPID_PPD', 'forge'),
+            'username' => env('DB_USERNAME_RAPID_PPD', 'forge'),
+            'password' => env('DB_PASSWORD_RAPID_PPD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
