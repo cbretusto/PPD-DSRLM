@@ -20,7 +20,6 @@ class DeviceRequest extends FormRequest
                 'device_name'   => 'required',
                 'tool_life'     => 'required',
                 'yec_sales_qty'     => 'required',
-                'pmi_sales_qty'     => 'required',
                 'process_type'  => 'required',
             ];
         }
@@ -64,7 +63,6 @@ class DeviceRequest extends FormRequest
                 'device_name.required'  => 'Device name is required.',
                 'tool_life.required'    => 'Tool life is required.',
                 'yec_sales_qty.required' => 'YEC sales quantity is required.',
-                'pmi_sales_qty.required' => 'PMI sales quantity is required.',
                 'process_type.required' => 'Process type is required.',
             ];
         }

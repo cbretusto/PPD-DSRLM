@@ -254,7 +254,7 @@
                                         <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:blue;"></i>
 
                                         <span class="ms-1 fw-bold">
-                                            70%
+                                            70% - 79%
                                         </span>
                                     </div>
 
@@ -262,7 +262,7 @@
                                         <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:orange;"></i>
 
                                         <span class="ms-1 fw-bold">
-                                            80%
+                                            80% - 99%
                                         </span>
                                     </div>
 
@@ -270,7 +270,7 @@
                                         <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:red;"></i>
 
                                         <span class="ms-1 fw-bold">
-                                            100%
+                                            100% and Above
                                         </span>
                                     </div>
 
@@ -314,163 +314,6 @@
             </div>
         </section>
     </div>
-
-    {{-- <!-- Device Modal Start -->
-    <div class="modal fade" id="modalDeviceCreateUpdate" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                <form method="post" id="formDevice" autocomplete="off">
-                    @csrf
-                    <!-- Top Header -->
-                    <div class="bg-dark bg-gradient text-white p-4">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                    <i class="fas fa-microchip fs-4"></i>
-                                </div>
-
-                                <div>
-                                    <h5 class="mb-1 fw-bold">
-                                        Device Setup
-                                    </h5>
-                                    <small class="opacity-75">
-                                        Create or update device information
-                                    </small>
-                                </div>
-                            </div>
-
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                    </div>
-
-                    <!-- Body -->
-                    <div class="modal-body p-4">
-                        <input type="text" class="input_hidden" id="txtDeviceId" name="device_id">
-                        <!-- Device Code -->
-                        <div class="mb-4">
-                            <label for="txtDeviceCode" class="form-label fw-semibold">
-                                Device Code:
-                            </label>
-
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fas fa-barcode text-dark"></i>
-                                </span>
-                                <input type="text" id="txtDeviceCode" name="device_code"  class="form-control bg-light border-start-0" autocomplete="off">
-                            </div>
-                        </div>
-
-                        <!-- Device Name -->
-                        <div class="mb-4">
-                            <label for="txtDeviceName"class="form-label fw-semibold">
-                                Device Name:
-                            </label>
-
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fas fa-screwdriver-wrench text-dark"></i>
-                                </span>
-                                <input type="text" name="device_name" id="txtDeviceName" class="form-control bg-light border-start-0" autocomplete="off">
-                            </div>
-                        </div>
-
-                        <!-- Tool Life -->
-                        <div class="mb-4">
-                            <label for="txtToolLife"class="form-label fw-semibold">
-                                Tool Life:
-                            </label>
-
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fas fa-scale-balanced text-dark"></i>
-                                </span>
-                                <input type="text" name="tool_life" id="txtToolLife" class="form-control bg-light border-start-0" autocomplete="off">
-                            </div>
-                        </div>
-
-                        <!-- YEC Sales Qty -->
-                        <div class="mb-4">
-                            <label for="txtYecSalesQty" class="form-label fw-semibold">
-                                YEC Sales Qty. (pcs):
-                            </label>
-
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fas fa-boxes-stacked text-dark"></i>
-                                </span>
-                                <input type="number"
-                                    name="yec_sales_qty"
-                                    id="txtYecSalesQty"
-                                    class="form-control bg-light border-start-0"
-                                    min="0"
-                                    step="1"
-                                    autocomplete="off">
-                            </div>
-                        </div>
-
-                        <!-- PMI Sales Qty -->
-                        <div class="mb-4">
-                            <label for="txtPmiSalesQty" class="form-label fw-semibold">
-                                PMI Sales Qty. (pcs):
-                            </label>
-
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fas fa-boxes-stacked text-dark"></i>
-                                </span>
-                                <input type="number"
-                                    name="pmi_sales_qty"
-                                    id="txtPmiSalesQty"
-                                    class="form-control bg-light border-start-0"
-                                    min="0"
-                                    step="1"
-                                    autocomplete="off">
-                            </div>
-                        </div>
-
-
-                        <!-- Department / Process -->
-                        <div class="mb-2">
-                            <label class="form-label fw-semibold">
-                                Process / Department:
-                            </label>
-
-                            <div class="d-flex flex-wrap gap-4">
-                                <input type="radio" class="btn-check" name="process_type" id="processPPDCN" value="0" autocomplete="off">
-                                <label class="btn btn-outline-dark px-4" for="processPPDCN">
-                                    PPD - CN
-                                </label>
-
-                                <input type="radio" class="btn-check" name="process_type" id="processPPDTS" value="1" autocomplete="off">
-                                <label class="btn btn-outline-dark px-4" for="processPPDTS">
-                                    PPD - TS
-                                </label>
-
-                                <input type="radio" class="btn-check" name="process_type" id="processStamping" value="2" autocomplete="off">
-                                <label class="btn btn-outline-dark px-4" for="processStamping">
-                                    Stamping
-                                </label>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="modal-footer justify-content-between bg-light">
-                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
-                            <i class="fas fa-times me-1"></i>
-                            Cancel
-                        </button>
-
-                        <button type="submit" id="btnDevice" class="btn btn-dark px-4">
-                            <i id="iBtnDeviceIcon" class="fas fa-check me-1"></i>
-                            Save Device
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div><!-- Device Modal End --> --}}
 
     <!-- Device Modal Start -->
     <div class="modal fade" id="modalDeviceCreateUpdate" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
