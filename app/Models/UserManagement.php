@@ -14,6 +14,7 @@ class UserManagement extends Model{
         'rapidx_user_id',
         'department',
         'position',
+        'email',
         'classification',
         'invoice_department',
         'updated_at'

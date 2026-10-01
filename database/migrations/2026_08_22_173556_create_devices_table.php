@@ -18,8 +18,8 @@ class CreateDevicesTable extends Migration
             $table->string('device_code')->nullable();
             $table->string('device_name')->nullable();
             $table->integer('tool_life')->nullable();
-            $table->integer('total_qty')->nullable();
             $table->unsignedTinyInteger('status')->default(0)->comment('0-active, 1-deactivate');
+            $table->string('process_type')->nullable()->comment('0 - PPD-CN, 1 - PPD - TS, 2 - STAMPING');
             $table->unsignedTinyInteger('logdel')->default(0)->comment('0-Show, 1-Hide');
             $table->timestamps();
         });

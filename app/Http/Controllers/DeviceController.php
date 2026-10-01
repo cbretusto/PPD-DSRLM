@@ -24,11 +24,14 @@ class DeviceController extends Controller
     }
 
     public function deviceCreateUpdate(DeviceRequest $request){
-        $deviceId = $request->input('device_id');
-        $data = $request->only(['device_code', 'device_name', 'tool_life']);
-        $employeeNo = session('rapidx_employee_number');
+        session_start();
+        $rapidxUserId = $_SESSION['rapidx_user_id'];
 
-        $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $employeeNo);
+        $deviceId = $request->input('device_id');
+        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'process_type']);
+        $userId = $rapidxUserId;
+
+        $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $userId);
 
         return response()->json($response);
     }
@@ -47,4 +50,57 @@ class DeviceController extends Controller
             'exceptionError' => $result['exceptionError'] ?? null,
         ], $result['hasError'] ? 500 : 200);
     }
+
+    public function getDeviceHistoryLastVariance(Request $request){
+        $result = $this->deviceService->getLastVarianceByDateRange(
+            $request,
+            $request->dateFrom,
+            $request->dateTo
+        );
+
+        return response()->json($result);
+    }
+
+    public function deviceResetToolLife(DeviceRequest $request){
+        session_start();
+        $rapidxUserId = $_SESSION['rapidx_user_id'];
+        $data = $request->only(['get_device_code', 'reset_date_from', 'reset_date_to', 'reset_last_variance', 'reset_approve_by']);
+        $data['reset_upload_file'] = $request->file('reset_upload_file');
+        $userId = $rapidxUserId;
+
+        $response = $this->deviceService->deviceResetToolLifeService($data, $userId);
+
+        return response()->json($response);
+    }
+
+    public function viewDeviceResetHistory(Request $request){
+        session_start();
+        $rapidxUserId = $_SESSION['rapidx_user_id'];
+        return $this->deviceService->getDeviceResetHistoryForDataTable($request, $rapidxUserId);
+    }
+
+    public function downloadFile($filename){
+        return $this->deviceService->downloadFileService($filename);
+    }
+
+
+    public function getPpdDsrlmUserApproveBy(){
+        $user_approve_by = $this->deviceService->getPpdDsrlmUserApproveByService();
+        return response()->json(['userApproveBy' => $user_approve_by]);
+    }
+
+    public function viewDeviceHistoryByDate(Request $request){
+        return $this->deviceService->getDeviceHistoryByDateForDataTable($request);
+    }
+
+    public function resetDeviceApproval(DeviceRequest $request){
+        $result = $this->deviceService->resetDeviceApprovalService($request->validated());
+
+        return response()->json([
+            'hasError' => $result['hasError'],
+            'exceptionError' => $result['exceptionError'] ?? null,
+        ], $result['hasError'] ? 500 : 200);
+    }
+
+
 }

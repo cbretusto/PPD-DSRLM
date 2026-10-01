@@ -1,11 +1,11 @@
 @php
     session_start();
     $layout = 'layouts.layout';
-    if(isset($_SESSION['invoice_revision_request_id'])){
-        $layout = 'layouts.layout';
-    }else{
-        $layout = 'layouts.no_access';
-    }
+    // if(isset($_SESSION['invoice_revision_request_id'])){
+    //     $layout = 'layouts.layout';
+    // }else{
+    //     $layout = 'layouts.no_access';
+    // }
 @endphp
 @extends($layout)
 @section('title', 'User Managemnet')
@@ -360,7 +360,8 @@
 
                                     <select class="form-select bg-light border-start-0" id="slctUserClassification" name="user_classification">
                                         <option value="" selected disabled>Select Classification</option>
-                                        <option value="1">Checked By</option>
+                                        <option value="1">Approve By</option>
+                                        <option value="2">Reset By</option>
                                     </select>
                                 </div>
                             </div>
@@ -654,13 +655,9 @@
                         "render": function (data, type, row) {
                             switch (row.classification) {
                                 case '1':
-                                    return "Checked By";
+                                    return "Approve By";
                                 case '2':
-                                    return "Noted By";
-                                case '3':
-                                    return "Approved By";
-                                case '4':
-                                    return "Conformed By";
+                                    return "Reset By";
                                 default:
                                     return "Unknown";
                             }

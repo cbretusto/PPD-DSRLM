@@ -89,7 +89,7 @@ class UserManagementRepository implements UserManagementInterface{
             'rapidx_user_id'        => $data['name_w_id'],
             'department'            => $data['department'],
             'position'              => $data['position'],
-            'email'             => $data['email'],
+            'email'                  => $data['email'],
         ];
     }
 

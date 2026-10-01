@@ -63,5 +63,16 @@ Route::controller(DeviceController::class)->group(function () {
     Route::post('/device_create_update', 'deviceCreateUpdate')->name('device_create_update');
     Route::get('/get_device_info_by_id', 'getDeviceInfoById')->name('get_device_info_by_id');
     Route::post('/change_device_status', 'changeDeviceStatus')->name('change_device_status');
+    Route::get('/get_ppd_dsrlm_user_approve_by', 'getPpdDsrlmUserApproveBy')->name('get_ppd_dsrlm_user_approve_by');
     Route::get('/view_device_history', 'viewDeviceHistory')->name('view_device_history');
+
+    Route::get('/device_history_last_variance', 'getDeviceHistoryLastVariance')->name('device_history_last_variance');
+    Route::post('/device_reset_tool_life', 'deviceResetToolLife')->name('device_reset_tool_life');
+
+    Route::get('/view_device_reset_history', 'viewDeviceResetHistory')->name('view_device_reset_history');
+    Route::get('/download_file/{filename}', 'downloadFile')->name('download_file');
+
+    Route::get('/view_device_history_by_date', 'viewDeviceHistoryByDate')->name('view_device_history_by_date');
+
+    Route::post('/reset_device_approval', 'resetDeviceApproval')->name('reset_device_approval');
 });

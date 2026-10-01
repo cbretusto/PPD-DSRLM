@@ -18,7 +18,10 @@
 <link rel="stylesheet" href="{{ asset('public/template/datatables/css/dataTables.bootstrap5.min.css') }}">
 
 <!-- Toastr -->
-<link rel="stylesheet" href="{{ asset('public/template/toastr/css/toastr.min.css') }}"> 
+<link rel="stylesheet" href="{{ asset('public/template/toastr/css/toastr.min.css') }}">
+
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="{{ asset('public/template/sweetalert2/css/sweetalert2.min.css') }}">
 
 <!-- Custom CSS -->
 <link rel="stylesheet" href="{{ asset('public/css/custom.css') }}">

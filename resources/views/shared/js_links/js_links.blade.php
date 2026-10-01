@@ -17,6 +17,9 @@
 <!-- Toastr -->
 <script src="{{ asset('public/template/toastr/js/toastr.min.js') }}"></script>
 
+<!-- SweetAlert2 -->
+<script src="{{ asset('public/template/sweetalert2/js/sweetalert2.min.js') }}"></script>
+
 <script>
     toastr.options = {
         "closeButton": false,

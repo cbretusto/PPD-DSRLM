@@ -13,7 +13,7 @@ class RapidDeliveryConfirmation extends Model
     protected $connection = 'mysql_rapid_ppd';
 
     public function rapid_delivery_update_details(){
-        return $this->hasMany(RapidDeliveryUpdate::class, 'pkid', 'id')->where('logdel', 0);
+        return $this->hasMany(RapidDeliveryUpdate::class, 'pkid', 'id');
     }
 
 }

@@ -13,7 +13,7 @@ class RapidDieSet extends Model
     protected $connection = 'mysql_rapid_ppd';
 
     public function rapid_po_received_details(){
-        return $this->hasMany(RapidPoReceived::class, 'ItemCode', 'R3Code')->where('logdel', 0);
+        return $this->hasMany(RapidPoReceived::class, 'ItemCode', 'R3Code');
     }
 
 }
