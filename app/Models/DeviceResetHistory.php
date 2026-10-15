@@ -14,6 +14,7 @@ class DeviceResetHistory extends Model
 
     protected $fillable = [
         'device_code',
+        'remark',
         'from',
         'to',
         'variance',

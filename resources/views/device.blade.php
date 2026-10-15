@@ -991,6 +991,26 @@
                         </div>
 
                         <hr class="my-3">
+                        <!-- Remark -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-info bg-opacity-10 text-info rounded-2 p-2 me-2">
+                                    <i class="fas fa-comment-alt"></i>
+                                </div>
+
+                                <div>
+                                    <div class="fw-semibold small">
+                                        Remark
+                                    </div>
+                                    <div class="text-muted small">
+                                        Select a remark.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <select class="form-select select2bs5 bg-light border-start-0 get-remark w-100" id="resetRemark" name="remark">
+                            </select>
+                        </div>
 
                         <!-- Current Balance -->
                         <div class="mb-4">
@@ -1166,12 +1186,17 @@
         $(document).ready(function () {
             resetModalFormValues();
             UserManagementGetApproveBy($('.get-ppd_dsrlm-user-approve_by'));
+            RemarkGet($('.get-remark'));
 
-            $('.select2bs5').select2({
-                theme: 'bootstrap-5',
-                dropdownAutoWidth: true,
-                dropdownParent: $(this).closest('.modal')
-            })
+            $('.select2bs5').each(function () {
+                $(this).select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    dropdownAutoWidth: true,
+                    dropdownParent: $(this).closest('.modal')
+                });
+
+            });
 
             $('#processFilter').change(function (e) {
                 e.preventDefault();
@@ -1334,9 +1359,9 @@
                 dataTableDeviceResetHistory.draw();
 
                 setTimeout(() => {
-                    const rowValue = $("#tableDeviceHistory tbody tr").eq(0).find("td").eq(2).text().trim();
-                    $('#historyTotalQuantity').text(rowValue);
-                }, 1000);
+                    const totalShipment = $("#tableDeviceHistory tbody tr").eq(0).find("td").eq(2).text().trim();
+                    $('#historyTotalQuantity').text(totalShipment);
+                }, 2345);
             });
 
             $('#buttonResetHistoryFilter').click(function (e) {

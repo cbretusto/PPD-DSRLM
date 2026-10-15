@@ -4,45 +4,103 @@ namespace App\Repositories;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Device;
 use App\Models\DeviceResetHistory;
 use App\Models\RapidDieSet;
 use App\Models\UserManagement;
+use App\Models\Remark;
 
 use App\Interfaces\DeviceInterface;
 
 class DeviceRepository implements DeviceInterface
 {
-    // public function getAllDeviceData($processType){
-    //     return Device::where('process_type', $processType)->where('logdel', 0)->get();
-    // }
     public function getAllDeviceData($processType){
         $devices = Device::query()
-            ->with([
-                'dieset_device_code_info.rapid_po_received_details.rapid_delivery_confirmation_info.rapid_delivery_update_details',
-            ])
             ->where('process_type', $processType)
             ->where('logdel', 0)
             ->get();
 
-        return $devices->map(function ($device) {
+        if ($devices->isEmpty()) {
+            return $devices;
+        }
 
-            $poDetails = optional($device->dieset_device_code_info)
-                ->rapid_po_received_details ?? collect();
+        $deviceCodes = $devices
+            ->pluck('device_code')
+            ->filter()
+            ->unique()
+            ->values();
 
-            $device->total_actual_so = $poDetails->sum(function ($po) {
+        $actualSos = DB::connection('mysql_rapid_ppd')
+            ->table('tbl_dieset as ds')
+            ->join(
+                'tbl_POReceived as po',
+                'po.ItemCode',
+                '=',
+                'ds.R3Code'
+            )
+            ->join('tbl_DeliveryConfirmation as dc', function ($join) {
+                $join->on('dc.OrderNo', '=', 'po.OrderNo')
+                    ->where('dc.logdel', 0);
+            })
+            ->join(
+                'tbl_DeliveryUpdateRecord as du',
+                'du.pkid',
+                '=',
+                'dc.id'
+            )
+            ->whereIn('ds.R3Code', $deviceCodes)
+            ->groupBy('ds.R3Code')
+            ->select(
+                'ds.R3Code',
+                DB::raw('COALESCE(SUM(du.ActualSO), 0) as total_actual_so')
+            )
+            ->pluck('total_actual_so', 'R3Code');
 
-                $deliveryUpdates = optional(
-                    $po->rapid_delivery_confirmation_info
-                )->rapid_delivery_update_details ?? collect();
-
-                return $deliveryUpdates->sum('ActualSO');
-            });
-
-            return $device;
+        $devices->each(function ($device) use ($actualSos) {
+            $device->total_actual_so = $actualSos->get(
+                $device->device_code,
+                0
+            );
         });
+
+        return $devices;
     }
+
+    // public function getAllDeviceData($processType){
+    //     return Device::query()
+    //         ->where('process_type', $processType)
+    //         ->where('logdel', 0)
+    //         ->get();
+    // }
+
+    // public function getAllDeviceData($processType){
+    //     $devices = Device::query()
+    //         ->with([
+    //             'dieset_device_code_info.rapid_po_received_details.rapid_delivery_confirmation_info.rapid_delivery_update_details',
+    //         ])
+    //         ->where('process_type', $processType)
+    //         ->where('logdel', 0)
+    //         ->get();
+
+    //     return $devices->map(function ($device) {
+
+    //         $poDetails = optional($device->dieset_device_code_info)
+    //             ->rapid_po_received_details ?? collect();
+
+    //         $device->total_actual_so = $poDetails->sum(function ($po) {
+
+    //             $deliveryUpdates = optional(
+    //                 $po->rapid_delivery_confirmation_info
+    //             )->rapid_delivery_update_details ?? collect();
+
+    //             return $deliveryUpdates->sum('ActualSO');
+    //         });
+
+    //         return $device;
+    //     });
+    // }
 
 
     public function getAllDeviceHistoryData($request){
@@ -159,6 +217,10 @@ class DeviceRepository implements DeviceInterface
     // =============================================================================
     // =============================================================================
     // =============================================================================
+    public function getPpdDsrlmRemarkRepository(){
+        return Remark::where('status', 0)->where('logdel', 0)->get();
+    }
+
     public function deviceResetToolLifeRepository(array $data){
         $getDeviceInfo = $this->getDeviceInfo($data['get_device_code']);
         $fileData = $this->mapUploadFile($data);
@@ -167,6 +229,7 @@ class DeviceRepository implements DeviceInterface
             'device_code'   => $data['get_device_code'],
             'from'          => $data['reset_date_from'],
             'to'            => $data['reset_date_to'],
+            'remark'        => $data['remark'],
             'variance'      => $data['reset_last_variance'],
             'uploaded_file' => $fileData['file_name'],
             'approve_by'    => $data['reset_approve_by'],
@@ -179,7 +242,7 @@ class DeviceRepository implements DeviceInterface
         $getDeviceInfo['reset_by'] = $data['user_id'];
         $approvalStatus = 0;
         $approvalRemark = '';
-        $this->mapEmailNotification($getDeviceInfo, $approvalStatus, $approvalRemark);
+        // $this->mapEmailNotification($getDeviceInfo, $approvalStatus, $approvalRemark);
         return true;
     }
 
@@ -363,7 +426,7 @@ class DeviceRepository implements DeviceInterface
         $approvalStatus = $data['reset_approval_status'];
         $approvalRemark = $data['reset_approval_remark'] ?? null;
 
-        $this->mapEmailNotification($getDeviceInfo, $approvalStatus, $approvalRemark);
+        // $this->mapEmailNotification($getDeviceInfo, $approvalStatus, $approvalRemark);
 
         return true;
     }

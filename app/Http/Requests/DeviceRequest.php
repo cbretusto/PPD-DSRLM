@@ -36,6 +36,7 @@ class DeviceRequest extends FormRequest
                 'get_device_code'       => 'required',
                 'reset_date_from'       => 'required',
                 'reset_date_to'         => 'required',
+                'remark'                => 'required',
                 'reset_approve_by'      => 'required',
                 'reset_upload_file'     => 'required|array',
                 'reset_upload_file.*'   => 'required|mimes:xlsx,xls,csv,pdf',
@@ -80,6 +81,7 @@ class DeviceRequest extends FormRequest
                 'get_device_code.required'      => 'Device code is required.',
                 'reset_date_from.required'      => 'Date from is required.',
                 'reset_date_to.required'        => 'Date to is required.',
+                'remark.required'               => 'Remark is required.',
                 'reset_last_variance.required'  => 'Current tool life balance is required.',
                 'reset_approve_by.required'     => 'Approve by is required.',
 

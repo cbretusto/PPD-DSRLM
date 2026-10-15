@@ -259,6 +259,31 @@ const UserManagementGetApproveBy = (element) => {
     ajaxRequest(ajaxGetSystemOneDepartment);
 }
 
+const RemarkGet = (element) => {
+    let result = '';
+    const ajaxGetRemarks = {
+        url: 'get_ppd_dsrlm_remark',
+        method: 'GET',
+        successCallback: (response) => {
+            let remarks = response['remark']
+            if(remarks.length > 0){
+                result += '<option value="" disabled selected>-- Select Remark --</option>';
+                for(let index = 0; index < remarks.length; index++){
+                    result += '<option value="' + remarks[index].remark + '">' + remarks[index].remark + '</option>';
+                }
+            }
+            else{
+                result += '<option value="" disabled>Not found</option>';
+            }
+            element.html(result);
+        },
+        errorCallback: () => {
+            result = '<option value="" disabled>Reload Again</option>';
+        }
+    };
+    ajaxRequest(ajaxGetRemarks);
+}
+
 function ResetDeviceApproval(){
     const ajaxResetDeviceApproval = {
         url: 'reset_device_approval',

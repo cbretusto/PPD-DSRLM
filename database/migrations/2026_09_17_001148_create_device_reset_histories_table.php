@@ -16,6 +16,7 @@ class CreateDeviceResetHistoriesTable extends Migration
         Schema::create('device_reset_histories', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('device_code');
+            $table->string('remark')->nullable();
             $table->date('from')->nullable();
             $table->date('to')->nullable();
             $table->integer('variance')->nullable();

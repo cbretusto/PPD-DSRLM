@@ -64,7 +64,7 @@ class DeviceController extends Controller
     public function deviceResetToolLife(DeviceRequest $request){
         session_start();
         $rapidxUserId = $_SESSION['rapidx_user_id'];
-        $data = $request->only(['get_device_code', 'reset_date_from', 'reset_date_to', 'reset_last_variance', 'reset_approve_by']);
+        $data = $request->only(['get_device_code', 'reset_date_from', 'reset_date_to', 'remark', 'reset_last_variance', 'reset_approve_by']);
         $data['reset_upload_file'] = $request->file('reset_upload_file');
         $userId = $rapidxUserId;
 
@@ -87,6 +87,11 @@ class DeviceController extends Controller
     public function getPpdDsrlmUserApproveBy(){
         $user_approve_by = $this->deviceService->getPpdDsrlmUserApproveByService();
         return response()->json(['userApproveBy' => $user_approve_by]);
+    }
+
+    public function getPpdDsrlmRemark(){
+        $remark = $this->deviceService->getPpdDsrlmRemarkService();
+        return response()->json(['remark' => $remark]);
     }
 
     public function viewDeviceHistoryByDate(Request $request){

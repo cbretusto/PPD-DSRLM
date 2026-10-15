@@ -753,6 +753,10 @@ class DeviceService
         return $this->deviceRepo->getPpdDsrlmUserApproveByRepository();
     }
 
+    public function getPpdDsrlmRemarkService(){
+        return $this->deviceRepo->getPpdDsrlmRemarkRepository();
+    }
+
     public function getDeviceHistoryByDateForDataTable($request){
         /*
         |--------------------------------------------------------------------------

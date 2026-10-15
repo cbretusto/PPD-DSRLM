@@ -68,6 +68,7 @@ Route::controller(DeviceController::class)->group(function () {
 
     Route::get('/device_history_last_variance', 'getDeviceHistoryLastVariance')->name('device_history_last_variance');
     Route::post('/device_reset_tool_life', 'deviceResetToolLife')->name('device_reset_tool_life');
+    Route::get('/get_ppd_dsrlm_remark', 'getPpdDsrlmRemark')->name('get_ppd_dsrlm_remark');
 
     Route::get('/view_device_reset_history', 'viewDeviceResetHistory')->name('view_device_reset_history');
     Route::get('/download_file/{filename}', 'downloadFile')->name('download_file');
