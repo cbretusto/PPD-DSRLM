@@ -49,6 +49,7 @@
                                                 <th>Action</th>
                                                 <th>Status</th>
                                                 <th>Remark</th>
+                                                <th>Remark Type</th>
                                             </tr>
                                         </thead>
                                     </table>
@@ -94,6 +95,19 @@
                     <!-- Body -->
                     <div class="modal-body p-4">
                         <input type="text" class="input_hidden" id="textRemarkId" name="remark_id" readonly>
+                        <div class="input-group input-group-lg mb-4">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-list text-dark"></i>
+                            </span>
+
+                            <select class="form-select bg-light border-start-0"
+                                    id="slctRemarkType" name="remark_type" required>
+                                <option value="" selected disabled>Select remark type</option>
+                                <option value="1">For Reset</option>
+                                <option value="2">For Device</option>
+                            </select>
+                        </div>
+
                         <!-- Remark -->
                         <div class="mb-2">
                             <label for="textRemark" class="form-label fw-semibold">Remark:</label>
@@ -226,7 +240,20 @@
                 "columns":[
                     { "data" : "action", orderable:false, searchable:false},
                     { "data" : "status"},
-                    { "data" : "remark"}
+                    { "data" : "remark"},
+                    { "data" : "remark_type",
+                        "defaultContent": 'N/A',
+                        "name": 'remark_type',
+                        "orderable": true,
+                        "searchable": true,
+                        "render": function (data, type, row) {
+                            if(row.remark_type == 1){
+                                return "For Reset";
+                            }else{
+                                return "For Device";
+                            }
+                        },
+                    },
                 ],
             });
 

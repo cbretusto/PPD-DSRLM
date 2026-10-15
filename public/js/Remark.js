@@ -48,6 +48,7 @@ function GetRemarkInfoByIdToEdit(RemarkId){
             let requestRemarkInfo = response['requestRemarkInfo']
             if(requestRemarkInfo.length > 0){
                 $("#textRemark").val(requestRemarkInfo[0].remark);
+                $("#slctRemarkType").val(requestRemarkInfo[0].remark_type);
             }
         },
         errorCallback: () => {

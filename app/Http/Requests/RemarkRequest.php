@@ -17,6 +17,7 @@ class RemarkRequest extends FormRequest
         if ($action === 'remarkCreateUpdate') {
             return [
                 'remark'        => 'required',
+                'remark_type'   => 'required',
             ];
         }
 
@@ -36,6 +37,7 @@ class RemarkRequest extends FormRequest
         if ($action === 'remarkCreateUpdate') {
             return [
                 'remark.required'       => 'Remark is required.',
+                'remark_type.required'  => 'Remark type is required.',
             ];
         }
 

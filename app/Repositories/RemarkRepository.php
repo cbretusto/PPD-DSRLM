@@ -16,6 +16,7 @@ class RemarkRepository implements RemarkInterface
     {
         $remarkData = [
             'remark'     => $data['remark'],
+            'remark_type'=> $data['remark_type'],
         ];
 
         if (empty($remarkId)) {

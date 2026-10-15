@@ -10,6 +10,7 @@ class Remark extends Model
     protected $table = 'remarks';
     protected $connection = 'mysql';
     protected $fillable = [
-        'remark'
+        'remark',
+        'remark_type'
     ];
 }

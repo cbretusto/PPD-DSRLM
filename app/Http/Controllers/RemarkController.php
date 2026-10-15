@@ -25,7 +25,7 @@ class RemarkController extends Controller
     public function remarkCreateUpdate(RemarkRequest $request)
     {
         $remarkId = $request->input('remark_id');
-        $data = $request->only(['remark']);
+        $data = $request->only(['remark', 'remark_type']);
         $employeeNo = session('rapidx_employee_number');
 
         $response = $this->remarkService->remarkCreateUpdate($remarkId, $data, $employeeNo);

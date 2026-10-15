@@ -15,6 +15,7 @@ class CreateRemarksTable extends Migration
     {
         Schema::create('remarks', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedTinyInteger('remark_type')->default(0)->comment('1-For Reset, 2-For Device');
             $table->string('remark')->nullable();
             $table->unsignedTinyInteger('status')->default(0)->comment('0-active, 1-deactivate');
             $table->unsignedTinyInteger('logdel')->default(0)->comment('0-Show, 1-Hide');
