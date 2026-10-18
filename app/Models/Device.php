@@ -16,7 +16,8 @@ class Device extends Model
         'tool_life',
         'yec_sales_qty',
         'pmi_sales_qty',
-        'process_type'
+        'process_type',
+        'classification'
     ];
 
     public function dieset_device_code_info(){

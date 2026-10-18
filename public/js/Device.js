@@ -1,8 +1,12 @@
 function DeviceCreateUpdate() {
+      const form = $('#formDevice')[0];
+    const formData = new FormData(form);
     const ajaxDeviceCreateUpdate = {
         url: "device_create_update",
         method: "POST",
-        data: $('#formDevice').serialize(),
+        data: formData,
+        processData: false,
+        contentType: false,
         dataType: "json",
         beforeSendCallback: function(xhr) {
             $("#iBtnDeviceIcon").addClass('spinner-border spinner-border-sm');
@@ -52,6 +56,7 @@ function GetDeviceInfoByIdToEdit(deviceId){
                 $("#txtToolLife").val(requestDeviceInfo[0].tool_life);
                 $("#txtYecSalesQty").val(requestDeviceInfo[0].yec_sales_qty);
                 $("#txtPmiSalesQty").val(requestDeviceInfo[0].pmi_sales_qty);
+                $("#slctDeviceClassification").val(requestDeviceInfo[0].classification);
                 $(`input[name="process_type"][value="${requestDeviceInfo[0].process_type}"]`).prop('checked', true);
             }
         },
@@ -313,5 +318,37 @@ function ResetDeviceApproval(){
         }
     };
     ajaxRequest(ajaxResetDeviceApproval);
+}
+
+function UpdateClassification(classification, csrfToken){
+    const ajaxUpdateClassification = {
+        url: 'update_classification',
+        method: "POST",
+        data: { _token: csrfToken,
+                classification: classification
+            },
+        dataType: "json",
+        beforeSendCallback: function(xhr) {
+            $("#iBtnUpdateAllClassificationIcon").addClass('spinner-border spinner-border-sm');
+            $("#btnUpdateAllClassification").addClass('disabled');
+            $("#iBtnUpdateAllClassificationIcon").removeClass('');
+        },
+        successCallback: (response) => {
+            if(response['hasError'] == 0){
+                dataTableDevice.draw();
+            }
+            $("#iBtnUpdateAllClassificationIcon").removeClass('spinner-border spinner-border-sm');
+            $("#btnUpdateAllClassification").removeClass('disabled');
+            $("#iBtnUpdateAllClassificationIcon").addClass('');
+        },
+        errorCallback: (xhr) => {
+            $("#iBtnUpdateAllClassificationIcon").removeClass('spinner-border spinner-border-sm');
+            $("#btnUpdateAllClassification").removeClass('disabled');
+            $("#iBtnUpdateAllClassificationIcon").addClass('');
+            handleValidatorErrors(xhr.responseJSON.errors);
+            toastr.error('An error occurred while processing your request.');
+        }
+    };
+    ajaxRequest(ajaxUpdateClassification);
 }
 

@@ -15,287 +15,159 @@ class DeviceService
         $this->deviceRepo = $deviceRepo;
     }
 
-    // public function getDeviceForDataTable($request){
-    //     $deviceDetails = $this->deviceRepo->getAllDeviceData($request->processType);
+    public function getDeviceForDataTable($request){
+        $deviceDetails = $this->deviceRepo->getAllDeviceData($request->processType);
 
-    //     return DataTables::of($deviceDetails)
-    //         ->addColumn('action', function ($deviceDetail) use ($request) {
-    //             $btns = '<center>';
-    //             if($deviceDetail->status == 0){
-    //                 $btns .= '<button
-    //                             type="button"
-    //                             class="btn
-    //                             btn-dark
-    //                             btn-sm
-    //                             actionUpdateDevice"
-    //                             device-id="' . $deviceDetail->id . '"
-    //                             data-bs-toggle="modal"
-    //                             data-bs-target="#modalDeviceCreateUpdate"
-    //                             title="Edit Device Details">
-    //                             <i class="fa fa-edit"></i>
-    //                         </button>&nbsp;';
-
-    //                 $btns .= '<button
-    //                             type="button"
-    //                             class="btn btn-info btn-sm actionDeviceHistory"
-    //                             device-id="' . $deviceDetail->id . '"
-    //                             device-code="' . $deviceDetail->device_code . '"
-    //                             device-name="' . $deviceDetail->device_name . '"
-    //                             tool-life="' . $deviceDetail->tool_life . '"
-    //                             pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
-    //                             yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
-    //                             device-total_qty="' . $deviceDetail->total_qty . '"
-    //                             device-total_qty="' . $deviceDetail->total_qty . '"
-    //                             dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
-    //                             dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
-    //                             dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
-    //                             dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
-    //                             data-bs-toggle="modal"
-    //                             data-bs-target="#modalDeviceHistory"
-    //                             title="View Device History">
-    //                             <i class="fa fa-history"></i>
-    //                         </button>&nbsp;';
-
-    //                 $btns .= '<button type="button"
-    //                             class="btn btn-danger
-    //                             btn-sm actionDeviceChangeStatus"
-    //                             device-id="' . $deviceDetail->id . '"
-    //                             status="1"
-    //                             data-bs-toggle="modal"
-    //                             data-bs-target="#modalDeviceChangeStatus"
-    //                             title="Deactivate Device">
-    //                             <i class="fa-solid fa-ban"></i>
-    //                         </button>';
-    //             }else{
-    //                 $btns .= '<button
-    //                             type="button"
-    //                             class="btn btn-warning btn-sm actionDeviceChangeStatus"
-    //                             device-id="' . $deviceDetail->id . '"
-    //                             status="0"
-    //                             data-bs-toggle="modal"
-    //                             data-bs-target="#modalDeviceChangeStatus"
-    //                             title="Activate Device">
-    //                             <i class="fa-solid fa-arrow-rotate-right"></i>
-    //                         </button>';
-    //             }
-
-    //             return $btns . '</center>';
-    //         })
-    //         ->addColumn('status', function ($deviceDetail) {
-    //             $status = $deviceDetail->status == 0 ? 'Active' : 'Inactive';
-    //             $badgeClass = $deviceDetail->status == 0 ? 'success' : 'danger';
-    //             return '<center><span class="badge bg-' . $badgeClass . '">' . $status . '</span></center>';
-    //         })
-    //         ->addColumn('total_actual_so', function ($device) {
-    //             return number_format((float) $device->total_actual_so, 0);
-    //         })
-
-    //         ->addColumn('percentage', function ($device) {
-    //             $toolLife = (float) $device->tool_life;
-    //             $totalActualSo = (float) $device->total_actual_so;
-
-    //             // Calculate actual percentage
-    //             $percentage = $toolLife > 0
-    //                 ? ($totalActualSo / $toolLife) * 100
-    //                 : 0;
-
-    //             // Color/icon based on percentage range
-    //             if ($percentage >= 100) {
-    //                 $icon = 'fa-exclamation-triangle';
-    //                 $color = 'red';
-    //             } elseif ($percentage >= 80) {
-    //                 $icon = 'fa-exclamation-triangle';
-    //                 $color = 'orange';
-    //             } elseif ($percentage >= 70) {
-    //                 $icon = 'fa-exclamation-triangle';
-    //                 $color = 'blue';
-    //             } else {
-    //                 $icon = 'fa-check-circle';
-    //                 $color = 'gray';
-    //             }
-
-    //             return '
-    //                 <div class="d-flex align-items-center gap-2">
-    //                     <i class="fa ' . $icon . ' icon-shadow"
-    //                         style="font-size:25px; color:' . $color . ';"
-    //                         title="' . number_format($percentage, 0) . '%"></i>
-
-    //                     <span>' . number_format($percentage, 0) . '%</span>
-    //                 </div>
-    //             ';
-    //         })
-
-    //         ->rawColumns([
-    //             'action',
-    //             'status',
-    //             'total_actual_so',
-    //             'percentage'
-    //         ])
-    //         ->make(true);
-    // }
-
-
-    public function getDeviceForDataTable($request)
-{
-    $deviceDetails = $this->deviceRepo->getAllDeviceData($request->processType);
-
-    // Sort by actual percentage DESC
-    $deviceDetails = $deviceDetails->sortByDesc(function ($device) {
-        $toolLife = (float) $device->tool_life;
-        $totalActualSo = (float) $device->total_actual_so;
-
-        return $toolLife > 0
-            ? ($totalActualSo / $toolLife) * 100
-            : 0;
-    })->values();
-
-    return DataTables::of($deviceDetails)
-
-        ->addColumn('action', function ($deviceDetail) use ($request) {
-            $btns = '<center>';
-
-            if ($deviceDetail->status == 0) {
-
-                $btns .= '<button
-                            type="button"
-                            class="btn btn-dark btn-sm actionUpdateDevice"
-                            device-id="' . $deviceDetail->id . '"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceCreateUpdate"
-                            title="Edit Device Details">
-                            <i class="fa fa-edit"></i>
-                        </button>&nbsp;';
-
-                $btns .= '<button
-                            type="button"
-                            class="btn btn-info btn-sm actionDeviceHistory"
-                            device-id="' . $deviceDetail->id . '"
-                            device-code="' . $deviceDetail->device_code . '"
-                            device-name="' . $deviceDetail->device_name . '"
-                            tool-life="' . $deviceDetail->tool_life . '"
-                            pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
-                            yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
-                            device-total_qty="' . $deviceDetail->total_qty . '"
-                            dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
-                            dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
-                            dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
-                            dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceHistory"
-                            title="View Device History">
-                            <i class="fa fa-history"></i>
-                        </button>&nbsp;';
-
-                $btns .= '<button
-                            type="button"
-                            class="btn btn-danger btn-sm actionDeviceChangeStatus"
-                            device-id="' . $deviceDetail->id . '"
-                            status="1"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceChangeStatus"
-                            title="Deactivate Device">
-                            <i class="fa-solid fa-ban"></i>
-                        </button>';
-
-            } else {
-
-                $btns .= '<button
-                            type="button"
-                            class="btn btn-warning btn-sm actionDeviceChangeStatus"
-                            device-id="' . $deviceDetail->id . '"
-                            status="0"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceChangeStatus"
-                            title="Activate Device">
-                            <i class="fa-solid fa-arrow-rotate-right"></i>
-                        </button>';
-            }
-
-            return $btns . '</center>';
-        })
-
-        ->addColumn('status', function ($deviceDetail) {
-
-            $status = $deviceDetail->status == 0
-                ? 'Active'
-                : 'Inactive';
-
-            $badgeClass = $deviceDetail->status == 0
-                ? 'success'
-                : 'danger';
-
-            return '<center>
-                        <span class="badge bg-' . $badgeClass . '">
-                            ' . $status . '
-                        </span>
-                    </center>';
-        })
-
-        ->addColumn('total_actual_so', function ($device) {
-
-            return number_format(
-                (float) $device->total_actual_so,
-                0
-            );
-        })
-
-        ->addColumn('percentage', function ($device) {
-
+        // Sort by actual percentage DESC
+        $deviceDetails = $deviceDetails->sortByDesc(function ($device) {
             $toolLife = (float) $device->tool_life;
             $totalActualSo = (float) $device->total_actual_so;
 
-            // Calculate actual percentage
-            $percentage = $toolLife > 0
+            return $toolLife > 0
                 ? ($totalActualSo / $toolLife) * 100
                 : 0;
+        })->values();
 
-            // Color based on actual percentage
-            if ($percentage >= 100) {
+        return DataTables::of($deviceDetails)
 
-                $icon = 'fa-exclamation-triangle';
-                $color = 'red';
+            ->addColumn('action', function ($deviceDetail) use ($request) {
+                $btns = '<center>';
 
-            } elseif ($percentage >= 80) {
+                if ($deviceDetail->status == 0) {
+                    $btns .= '<button
+                                type="button"
+                                class="btn btn-dark btn-sm actionUpdateDevice"
+                                device-id="' . $deviceDetail->id . '"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDeviceCreateUpdate"
+                                title="Edit Device Details">
+                                <i class="fa fa-edit"></i>
+                            </button>&nbsp;';
 
-                $icon = 'fa-exclamation-triangle';
-                $color = 'orange';
+                    $btns .= '<button
+                                type="button"
+                                class="btn btn-info btn-sm actionDeviceHistory"
+                                device-id="' . $deviceDetail->id . '"
+                                device-code="' . $deviceDetail->device_code . '"
+                                device-name="' . $deviceDetail->device_name . '"
+                                tool-life="' . $deviceDetail->tool_life . '"
+                                pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
+                                yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
+                                device-total_qty="' . $deviceDetail->total_qty . '"
+                                dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
+                                dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
+                                dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
+                                dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDeviceHistory"
+                                title="View Device History">
+                                <i class="fa fa-history"></i>
+                            </button>&nbsp;';
 
-            } elseif ($percentage >= 70) {
+                    $btns .= '<button
+                                type="button"
+                                class="btn btn-danger btn-sm actionDeviceChangeStatus"
+                                device-id="' . $deviceDetail->id . '"
+                                status="1"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDeviceChangeStatus"
+                                title="Deactivate Device">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>';
 
-                $icon = 'fa-exclamation-triangle';
-                $color = 'blue';
+                } else {
+                    $btns .= '<button
+                                type="button"
+                                class="btn btn-warning btn-sm actionDeviceChangeStatus"
+                                device-id="' . $deviceDetail->id . '"
+                                status="0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDeviceChangeStatus"
+                                title="Activate Device">
+                                <i class="fa-solid fa-arrow-rotate-right"></i>
+                            </button>';
+                }
 
-            } else {
+                return $btns . '</center>';
+            })
 
-                $icon = 'fa-check-circle';
-                $color = 'gray';
-            }
+            ->addColumn('status', function ($deviceDetail) {
 
-            return '
-                <div class="d-flex align-items-center gap-2">
+                $status = $deviceDetail->status == 0
+                    ? 'Active'
+                    : 'Inactive';
 
-                    <i class="fa ' . $icon . ' icon-shadow"
-                        style="font-size:25px; color:' . $color . ';"
-                        title="' . number_format($percentage, 0) . '%">
-                    </i>
+                $badgeClass = $deviceDetail->status == 0
+                    ? 'success'
+                    : 'danger';
 
-                    <span>' . number_format($percentage, 0) . '%</span>
+                return '<center>
+                            <span class="badge bg-' . $badgeClass . '">
+                                ' . $status . '
+                            </span>
+                        </center>';
+            })
 
-                </div>
-            ';
-        })
+            ->addColumn('total_actual_so', function ($device) {
 
-        ->rawColumns([
-            'action',
-            'status',
-            'total_actual_so',
-            'percentage'
-        ])
+                return number_format(
+                    (float) $device->total_actual_so,
+                    0
+                );
+            })
 
-        ->make(true);
-}
+            ->addColumn('percentage', function ($device) {
 
+                $toolLife = (float) $device->tool_life;
+                $totalActualSo = (float) $device->total_actual_so;
 
+                // Calculate actual percentage
+                $percentage = $toolLife > 0
+                    ? ($totalActualSo / $toolLife) * 100
+                    : 0;
+
+                // Color based on actual percentage
+                if ($percentage >= 100) {
+
+                    $icon = 'fa-exclamation-triangle';
+                    $color = 'red';
+
+                } elseif ($percentage >= 80) {
+
+                    $icon = 'fa-exclamation-triangle';
+                    $color = 'orange';
+
+                } elseif ($percentage >= 70) {
+
+                    $icon = 'fa-exclamation-triangle';
+                    $color = 'blue';
+
+                } else {
+
+                    $icon = 'fa-check-circle';
+                    $color = 'gray';
+                }
+
+                return '
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa ' . $icon . ' icon-shadow"
+                            style="font-size:25px; color:' . $color . ';"
+                            title="' . number_format($percentage, 0) . '%">
+                        </i>
+                        <span>' . number_format($percentage, 0) . '%</span>
+                    </div>
+                ';
+            })
+
+            ->rawColumns([
+                'action',
+                'status',
+                'total_actual_so',
+                'percentage'
+            ])
+
+            ->make(true);
+    }
 
     public function getDeviceHistoryForDataTable($request){
         $deviceHistoryDetails = $this->deviceRepo->getAllDeviceHistoryData($request);
@@ -363,13 +235,14 @@ class DeviceService
 
         try {
             $exists = $this->deviceRepo->existsDevice([
-                'device_code'   => $data['device_code'],
-                'device_name'   => $data['device_name'],
-                'tool_life'     => $data['tool_life'],
-                'yec_sales_qty' => $data['yec_sales_qty'],
-                'pmi_sales_qty' => $data['pmi_sales_qty'],
-                'process_type'  => $data['process_type'],
-                'logdel'        => 0,
+                'device_code'       => $data['device_code'],
+                'device_name'       => $data['device_name'],
+                'tool_life'         => $data['tool_life'],
+                'yec_sales_qty'     => $data['yec_sales_qty'],
+                'pmi_sales_qty'     => $data['pmi_sales_qty'],
+                'classification'    => $data['device_classification'],
+                'process_type'      => $data['process_type'],
+                'logdel'            => 0,
             ], $deviceId);
 
             if ($exists) {
@@ -392,11 +265,11 @@ class DeviceService
         return $this->deviceRepo->getDeviceInfoByIdRepository($deviceId);
     }
 
-    public function changeDeviceStatus(array $data): array{
+    public function changeDeviceStatusService(array $data): array{
         DB::beginTransaction();
 
         try {
-            $this->deviceRepo->changeDeviceStatus([
+            $this->deviceRepo->changeDeviceStatusRepository([
                 'device_id' => $data['device_id'],
                 'status'     => $data['status'],
             ]);
@@ -406,6 +279,31 @@ class DeviceService
         } catch (\Exception $e) {
             DB::rollBack();
             return ['hasError' => 1, 'exceptionError' => $e->getMessage()];
+        }
+    }
+
+    public function updateClassificationService($classification){
+        DB::beginTransaction();
+
+        try {
+            $updatedCount = $this->deviceRepo
+                ->updateClassificationRepository($classification);
+
+            DB::commit();
+
+            return [
+                'hasError' => 0,
+                'updatedCount' => $updatedCount,
+            ];
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            report($e);
+
+            return [
+                'hasError' => 1,
+                'exceptionError' => 'Unable to update classification.',
+            ];
         }
     }
 
@@ -643,14 +541,14 @@ class DeviceService
                 $remark = $deviceDetail->approved_by_remark ?? null;
 
                 switch ($deviceDetail->approval_status) {
-
                     case 0:
                         return '
                             <div>
                                 <span class="badge bg-warning text-dark">
                                     <i class="fas fa-clock"></i> Pending
                                 </span>
-                ' . ($approver ? '
+
+                                ' . ($approver ? '
                                     <small class="d-block text-muted mt-1">
                                         <strong>By:</strong> ' . e($approver) . '
                                     </small>
@@ -726,20 +624,7 @@ class DeviceService
                     default:
                         return '';
                 }
-
             })
-
-            // ->addColumn('approve_by', function ($deviceDetail) {
-            //     if($deviceDetail->approval_status == 0){
-            //         return '<center><span class="badge bg-warning">Pending</span></center>';
-            //     }else if($deviceDetail->approval_status == 1){
-            //         return '<center><span class="badge bg-success">Approved</span></center>';
-            //     }else if($deviceDetail->approval_status == 2){
-            //         return '<center><span class="badge bg-danger">Disapproved</span></center>';
-            //     }
-
-            //     return $deviceDetail->approve_by_rapidx_user_info ? $deviceDetail->approve_by_rapidx_user_info->name : '';
-            // })
 
             ->rawColumns(['action', 'status', 'from', 'to', 'uploaded_file', 'reset_by', 'approve_by'])
             ->make(true);
@@ -772,57 +657,33 @@ class DeviceService
         $deviceHistoryDetails =
             $this->deviceRepo->getDeviceHistoryByDateRepository($request);
 
-
         /*
         |--------------------------------------------------------------------------
         | 2. Calculate cumulative variance
         |--------------------------------------------------------------------------
-        | Repository returns the records in ASCENDING order:
-        |
-        | Oldest
-        |   ↓
-        | Newest
-        |
-        | Example:
-        | Jan 01 = ActualSO 100 -> Variance 0
-        | Jan 02 = ActualSO 50  -> Variance 150
-        | Jan 03 = ActualSO 30  -> Variance 180
-        |--------------------------------------------------------------------------
         */
-
         $runningTotal = 0;
-
         $deviceHistoryDetails = $deviceHistoryDetails
             ->map(function ($row, $index) use (&$runningTotal) {
-
                 $actualSO = (int) ($row['DeliveryUpdateActualSO'] ?? 0);
-
                 /*
                 |--------------------------------------------------------------------------
                 | First historical record
                 |--------------------------------------------------------------------------
                 */
-
                 if ($index === 0) {
-
                     $row['Variance'] = 0;
-
                     $runningTotal = $actualSO;
-
                     return $row;
                 }
-
 
                 /*
                 |--------------------------------------------------------------------------
                 | Continue cumulative total
                 |--------------------------------------------------------------------------
                 */
-
                 $runningTotal += $actualSO;
-
                 $row['Variance'] = $runningTotal;
-
                 return $row;
             })
             ->values();
@@ -832,19 +693,8 @@ class DeviceService
         |--------------------------------------------------------------------------
         | 3. Filter by deviceDateFrom
         |--------------------------------------------------------------------------
-        | IMPORTANT:
-        | We filter AFTER calculating variance.
-        |
-        | Database date format:
-        | Y-m-d H-i-s
-        |
-        | Example:
-        | 2018-02-08 06-13-54
-        |--------------------------------------------------------------------------
         */
-
         if ($request->filled('deviceDateFrom')) {
-
             $dateFrom = Carbon::parse(
                 $request->deviceDateFrom
             )->startOfDay();
@@ -860,37 +710,22 @@ class DeviceService
                         'Y-m-d H-i-s',
                         $row['DeliveryUpdateLastUpdate']
                     );
-
                     return $lastUpdate->greaterThanOrEqualTo($dateFrom);
                 });
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | 4. Filter by deviceDateTo
         |--------------------------------------------------------------------------
-        | endOfDay() ensures the entire selected date is included.
-        |
-        | Example:
-        | deviceDateTo = 2018-02-08
-        |
-        | Includes:
-        | 2018-02-08 00-00-00
-        | ...
-        | 2018-02-08 23-59-59
-        |--------------------------------------------------------------------------
         */
-
         if ($request->filled('deviceDateTo')) {
-
             $dateTo = Carbon::parse(
                 $request->deviceDateTo
             )->endOfDay();
 
             $deviceHistoryDetails = $deviceHistoryDetails
                 ->filter(function ($row) use ($dateTo) {
-
                     if (empty($row['DeliveryUpdateLastUpdate'])) {
                         return false;
                     }
@@ -904,15 +739,12 @@ class DeviceService
                 });
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | 5. Reset collection indexes
         |--------------------------------------------------------------------------
         */
-
         $deviceHistoryDetails = $deviceHistoryDetails->values();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -926,7 +758,6 @@ class DeviceService
 
         $deviceHistoryDetails = $deviceHistoryDetails
             ->sort(function ($a, $b) {
-
                 $dateCompare = strtotime(
                     $b['DeliveryUpdateLastUpdate']
                 ) <=> strtotime(
@@ -942,75 +773,29 @@ class DeviceService
             })
             ->values();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | 7. Return DataTable
-        |--------------------------------------------------------------------------
-        */
-
         return DataTables::of($deviceHistoryDetails)
+        ->addColumn('DeliveryUpdateRecordDate', function ($row) {
+            return $row['DeliveryUpdateLastUpdate'] ?? '';
+        })
 
-            /*
-            |--------------------------------------------------------------------------
-            | Delivery Update Date
-            |--------------------------------------------------------------------------
-            */
+        ->addColumn('ActualSO', function ($row) {
+            return number_format(
+                (int) ($row['DeliveryUpdateActualSO'] ?? 0)
+            );
+        })
 
-            ->addColumn('DeliveryUpdateRecordDate', function ($row) {
+        ->addColumn('Variance', function ($row) {
+            return number_format(
+                (int) ($row['Variance'] ?? 0)
+            );
+        })
 
-                return $row['DeliveryUpdateLastUpdate'] ?? '';
-            })
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Actual SO
-            |--------------------------------------------------------------------------
-            */
-
-            ->addColumn('ActualSO', function ($row) {
-
-                return number_format(
-                    (int) ($row['DeliveryUpdateActualSO'] ?? 0)
-                );
-            })
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Variance
-            |--------------------------------------------------------------------------
-            */
-
-            ->addColumn('Variance', function ($row) {
-
-                return number_format(
-                    (int) ($row['Variance'] ?? 0)
-                );
-            })
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Raw Columns
-            |--------------------------------------------------------------------------
-            */
-
-            ->rawColumns([
-                'DeliveryUpdateRecordDate',
-                'ActualSO',
-                'Variance',
-            ])
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Generate DataTable response
-            |--------------------------------------------------------------------------
-            */
-
-            ->make(true);
+        ->rawColumns([
+            'DeliveryUpdateRecordDate',
+            'ActualSO',
+            'Variance',
+        ])
+        ->make(true);
     }
 
     public function resetDeviceApprovalService(array $data): array{

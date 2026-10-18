@@ -28,7 +28,7 @@ class DeviceController extends Controller
         $rapidxUserId = $_SESSION['rapidx_user_id'];
 
         $deviceId = $request->input('device_id');
-        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'process_type']);
+        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'device_classification', 'longevity_file', 'process_type']);
         $userId = $rapidxUserId;
 
         $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $userId);
@@ -43,7 +43,22 @@ class DeviceController extends Controller
     }
 
     public function changeDeviceStatus(DeviceRequest $request){
-        $result = $this->deviceService->changeDeviceStatus($request->validated());
+        $result = $this->deviceService->changeDeviceStatusService($request->validated());
+
+        return response()->json([
+            'hasError' => $result['hasError'],
+            'exceptionError' => $result['exceptionError'] ?? null,
+        ], $result['hasError'] ? 500 : 200);
+    }
+
+    public function updateClassification(Request $request){
+        $validated = $request->validate([
+            'classification' => ['required', 'integer'],
+        ]);
+
+        $result = $this->deviceService->updateClassificationService(
+            $validated['classification']
+        );
 
         return response()->json([
             'hasError' => $result['hasError'],

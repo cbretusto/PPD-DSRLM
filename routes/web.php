@@ -61,6 +61,7 @@ Route::controller(RemarkController::class)->group(function () {
 Route::controller(DeviceController::class)->group(function () {
     Route::get('/view_device', 'viewDevice')->name('view_device');
     Route::post('/device_create_update', 'deviceCreateUpdate')->name('device_create_update');
+    Route::post('/update_classification', 'updateClassification')->name('update_classification');
     Route::get('/get_device_info_by_id', 'getDeviceInfoById')->name('get_device_info_by_id');
     Route::post('/change_device_status', 'changeDeviceStatus')->name('change_device_status');
     Route::get('/get_ppd_dsrlm_user_approve_by', 'getPpdDsrlmUserApproveBy')->name('get_ppd_dsrlm_user_approve_by');

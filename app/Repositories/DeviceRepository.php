@@ -68,41 +68,6 @@ class DeviceRepository implements DeviceInterface
         return $devices;
     }
 
-    // public function getAllDeviceData($processType){
-    //     return Device::query()
-    //         ->where('process_type', $processType)
-    //         ->where('logdel', 0)
-    //         ->get();
-    // }
-
-    // public function getAllDeviceData($processType){
-    //     $devices = Device::query()
-    //         ->with([
-    //             'dieset_device_code_info.rapid_po_received_details.rapid_delivery_confirmation_info.rapid_delivery_update_details',
-    //         ])
-    //         ->where('process_type', $processType)
-    //         ->where('logdel', 0)
-    //         ->get();
-
-    //     return $devices->map(function ($device) {
-
-    //         $poDetails = optional($device->dieset_device_code_info)
-    //             ->rapid_po_received_details ?? collect();
-
-    //         $device->total_actual_so = $poDetails->sum(function ($po) {
-
-    //             $deliveryUpdates = optional(
-    //                 $po->rapid_delivery_confirmation_info
-    //             )->rapid_delivery_update_details ?? collect();
-
-    //             return $deliveryUpdates->sum('ActualSO');
-    //         });
-
-    //         return $device;
-    //     });
-    // }
-
-
     public function getAllDeviceHistoryData($request){
         $deviceHistories = RapidDieSet::with([
             'rapid_po_received_details.rapid_delivery_confirmation_info.rapid_delivery_update_details'
@@ -169,12 +134,13 @@ class DeviceRepository implements DeviceInterface
 
     public function deviceCreateUpdateRepository(?string $deviceId, array $data){
         $deviceData = [
-            'device_code'   => $data['device_code'],
-            'device_name'   => $data['device_name'],
-            'tool_life'     => $data['tool_life'],
-            'yec_sales_qty' => $data['yec_sales_qty'],
-            'pmi_sales_qty' => $data['pmi_sales_qty'],
-            'process_type'  => $data['process_type'],
+            'device_code'       => $data['device_code'],
+            'device_name'       => $data['device_name'],
+            'tool_life'         => $data['tool_life'],
+            'yec_sales_qty'     => $data['yec_sales_qty'],
+            'pmi_sales_qty'     => $data['pmi_sales_qty'],
+            'classification'    => $data['device_classification'],
+            'process_type'      => $data['process_type'],
         ];
 
         if(empty($deviceId)){
@@ -203,11 +169,104 @@ class DeviceRepository implements DeviceInterface
         return Device::where('id', $deviceId)->where('logdel', 0)->get();
     }
 
-    public function changeDeviceStatus(array $data){
+    public function changeDeviceStatusRepository(array $data){
         return Device::where('id', $data['device_id'])->update([
             'status'     => $data['status'],
             'updated_at' => now(),
         ]);
+    }
+
+    public function updateClassificationRepository($classification){
+        $getDevicePercentages = $this->mapDevicePercentage($classification);
+
+        $deviceIdsToUpdate = $getDevicePercentages
+            ->filter(function ($device) {
+                return $device->percentage >= 70;
+            })
+            ->pluck('id')
+            ->values()
+            ->all();
+
+        if (empty($deviceIdsToUpdate)) {
+            return 0;
+        }
+
+        // Update all qualifying devices in one query.
+        return Device::query()
+            ->whereIn('id', $deviceIdsToUpdate)
+            ->update([
+                'classification' => $classification,
+            ]);
+    }
+
+    private function mapDevicePercentage($classification){
+        $devices = Device::query()
+            ->select([
+                'id',
+                'device_code',
+                'device_name',
+                'classification',
+            ])
+            ->where('classification', '!=', '2')
+            ->where('status', 0)
+            ->where('logdel', 0)
+            ->get();
+
+        if ($devices->isEmpty()) {
+            return collect();
+        }
+
+        $deviceCodes = $devices
+            ->pluck('device_code')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $actualSos = DB::connection('mysql_rapid_ppd')
+            ->table('tbl_dieset as ds')
+            ->join(
+                'tbl_POReceived as po',
+                'po.ItemCode',
+                '=',
+                'ds.R3Code'
+            )
+            ->join('tbl_DeliveryConfirmation as dc', function ($join) {
+                $join->on('dc.OrderNo', '=', 'po.OrderNo')
+                    ->where('dc.logdel', 0);
+            })
+            ->join(
+                'tbl_DeliveryUpdateRecord as du',
+                'du.pkid',
+                '=',
+                'dc.id'
+            )
+            ->whereIn('ds.R3Code', $deviceCodes)
+            ->groupBy('ds.R3Code')
+            ->select(
+                'ds.R3Code',
+                DB::raw(
+                    'COALESCE(SUM(du.ActualSO), 0) as total_actual_so'
+                )
+            )
+            ->pluck('total_actual_so', 'R3Code');
+
+        return $devices->map(function ($device) use ($actualSos) {
+            $toolLife = (float) $device->tool_life;
+
+            $totalActualSo = (float) $actualSos->get(
+                $device->device_code,
+                0
+            );
+
+            $percentage = $toolLife > 0
+                ? ($totalActualSo / $toolLife) * 100
+                : 0;
+
+            $device->total_actual_so = $totalActualSo;
+            $device->percentage = $percentage;
+
+            return $device;
+        });
     }
 
     public function getPpdDsrlmUserApproveByRepository(){

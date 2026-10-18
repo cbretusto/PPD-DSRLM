@@ -16,11 +16,12 @@ class DeviceRequest extends FormRequest
 
         if ($action === 'deviceCreateUpdate') {
             return [
-                'device_code'   => 'required',
-                'device_name'   => 'required',
-                'tool_life'     => 'required',
-                'yec_sales_qty'     => 'required',
-                'process_type'  => 'required',
+                'device_code'           => 'required',
+                'device_name'           => 'required',
+                'tool_life'             => 'required',
+                'yec_sales_qty'         => 'required',
+                'process_type'          => 'required',
+                'device_classification' => 'required',
             ];
         }
 
@@ -60,11 +61,12 @@ class DeviceRequest extends FormRequest
 
         if ($action === 'deviceCreateUpdate') {
             return [
-                'device_code.required'  => 'Device code is required.',
-                'device_name.required'  => 'Device name is required.',
-                'tool_life.required'    => 'Tool life is required.',
-                'yec_sales_qty.required' => 'YEC sales quantity is required.',
-                'process_type.required' => 'Process type is required.',
+                'device_code.required'              => 'Device code is required.',
+                'device_name.required'              => 'Device name is required.',
+                'tool_life.required'                => 'Tool life is required.',
+                'yec_sales_qty.required'            => 'YEC sales quantity is required.',
+                'process_type.required'             => 'Process type is required.',
+                'device_classification.required'    => 'Device classification is required.',
             ];
         }
 
