@@ -28,7 +28,7 @@ class DeviceController extends Controller
         $rapidxUserId = $_SESSION['rapidx_user_id'];
 
         $deviceId = $request->input('device_id');
-        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'device_classification', 'longevity_file', 'process_type']);
+        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'device_classification', 'longevity_parts_upload_file', 'process_type']);
         $userId = $rapidxUserId;
 
         $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $userId);
@@ -79,7 +79,17 @@ class DeviceController extends Controller
     public function deviceResetToolLife(DeviceRequest $request){
         session_start();
         $rapidxUserId = $_SESSION['rapidx_user_id'];
-        $data = $request->only(['get_device_code', 'reset_date_from', 'reset_date_to', 'remark', 'reset_last_variance', 'reset_approve_by']);
+        $data =
+            $request->only([
+                        'get_device_code',
+                        'reset_date_from',
+                        'reset_date_to',
+                        'remark',
+                        'reset_last_variance',
+                        'reset_approve_by',
+                        'reset_yec_sales_qty',
+                        'reset_pmi_sales_qty'
+                    ]);
         $data['reset_upload_file'] = $request->file('reset_upload_file');
         $userId = $rapidxUserId;
 
@@ -96,6 +106,10 @@ class DeviceController extends Controller
 
     public function downloadFile($filename){
         return $this->deviceService->downloadFileService($filename);
+    }
+
+    public function deviceDownloadFile($filename){
+        return $this->deviceService->deviceDownloadFileService($filename);
     }
 
 

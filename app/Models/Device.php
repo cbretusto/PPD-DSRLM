@@ -17,7 +17,8 @@ class Device extends Model
         'yec_sales_qty',
         'pmi_sales_qty',
         'process_type',
-        'classification'
+        'classification',
+        'attachment'
     ];
 
     public function dieset_device_code_info(){

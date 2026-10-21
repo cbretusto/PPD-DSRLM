@@ -132,36 +132,61 @@ class DeviceRepository implements DeviceInterface
         ->values();
     }
 
-    public function deviceCreateUpdateRepository(?string $deviceId, array $data){
-        $deviceData = [
-            'device_code'       => $data['device_code'],
-            'device_name'       => $data['device_name'],
-            'tool_life'         => $data['tool_life'],
-            'yec_sales_qty'     => $data['yec_sales_qty'],
-            'pmi_sales_qty'     => $data['pmi_sales_qty'],
-            'classification'    => $data['device_classification'],
-            'process_type'      => $data['process_type'],
-        ];
+    // public function deviceCreateUpdateRepository(?string $deviceId, array $data){
+    //     $fileData = $this->mapUploadFileForLongevityParts($data);
+    //     $deviceData = [
+    //         'device_code'       => $data['device_code'],
+    //         'device_name'       => $data['device_name'],
+    //         'tool_life'         => $data['tool_life'],
+    //         'yec_sales_qty'     => $data['yec_sales_qty'],
+    //         'pmi_sales_qty'     => $data['pmi_sales_qty'],
+    //         'classification'    => $data['device_classification'],
+    //         'process_type'      => $data['process_type'],
+    //         'attachment'        => $fileData['file_name'] ?? '',
+    //     ] ;
 
-        if(empty($deviceId)){
-            $deviceData['created_by'] = $data['user_id'];
-            return Device::create($deviceData);
+    //     if(empty($deviceId)){
+    //         $deviceData['created_by'] = $data['user_id'];
+    //         return Device::create($deviceData);
+    //     }
+
+    //     $device = Device::findOrFail($deviceId);
+    //     $deviceData['updated_by'] = $data['user_id'];
+    //     $device->update($deviceData);
+
+    //     return $device;
+    // }
+
+    private function mapUploadFileForLongevityParts(array $data): array{
+        $uploadedFiles = [];
+        if (isset($data['longevity_parts_upload_file'])) {
+            foreach ($data['longevity_parts_upload_file'] as $deviceUploadFile) {
+                $uploadOriginalName = $deviceUploadFile->getClientOriginalName();
+                Storage::putFileAs(
+                    'public/longevity_parts',
+                    $deviceUploadFile,
+                    $uploadOriginalName
+                );
+                $uploadedFiles[] = $uploadOriginalName;
+            }
         }
 
-        $device = Device::findOrFail($deviceId);
-        $deviceData['updated_by'] = $data['user_id'];
-        $device->update($deviceData);
-
-        return $device;
+        return [
+            'file_name' => implode(' || ', $uploadedFiles)
+        ];
     }
 
     public function existsDevice(array $conditions, ?string $excludeDeviceId = null): bool{
         $query = Device::where($conditions);
 
-        if ($excludeDeviceId) {
-            $query->where('id', '!=', $excludeDeviceId);
-        }
+        // if ($excludeDeviceId) {
+        //     $query->where('id',  $excludeDeviceId);
+        // }
 
+        return $query->exists();
+    }
+    public function newDevice(array $conditions): bool{
+        $query = Device::where($conditions);
         return $query->exists();
     }
 
@@ -176,41 +201,226 @@ class DeviceRepository implements DeviceInterface
         ]);
     }
 
-    public function updateClassificationRepository($classification){
-        $getDevicePercentages = $this->mapDevicePercentage($classification);
+    // public function updateClassificationRepository(): int{
+    //     $classification = null;
+    //     $devices = $this->mapDevicePercentage($classification);
 
-        $deviceIdsToUpdate = $getDevicePercentages
-            ->filter(function ($device) {
-                return $device->percentage >= 70;
-            })
-            ->pluck('id')
-            ->values()
-            ->all();
+    //     if ($devices->isEmpty()) {
+    //         return 0;
+    //     }
 
-        if (empty($deviceIdsToUpdate)) {
+    //     $deviceIdsToOne = $devices
+    //         ->filter(function ($device) {
+    //             return $device->percentage >= 70
+    //                 && (int) $device->classification !== 1;
+    //         })
+    //         ->pluck('id')
+    //         ->all();
+
+    //     $deviceIdsToZero = $devices
+    //         ->filter(function ($device) {
+    //             return $device->percentage < 70
+    //                 && (int) $device->classification === 1;
+    //         })
+    //         ->pluck('id')
+    //         ->all();
+
+    //     $updatedToOne = 0;
+    //     $updatedToZero = 0;
+
+    //     if (!empty($deviceIdsToOne)) {
+    //         $updatedToOne = Device::query()
+    //             ->whereIn('id', $deviceIdsToOne)
+    //             ->where('classification', '!=', 2)
+    //             ->update([
+    //                 'classification' => 1,
+    //             ]);
+    //     }
+
+    //     if (!empty($deviceIdsToZero)) {
+    //         $updatedToZero = Device::query()
+    //             ->whereIn('id', $deviceIdsToZero)
+    //             ->where('classification', 1)
+    //             ->update([
+    //                 'classification' => 0,
+    //             ]);
+    //     }
+
+    //     return $updatedToOne + $updatedToZero;
+    // }
+
+    // private function mapDevicePercentage($classification){
+    //     $devices = Device::query()
+    //         ->select([
+    //             'id',
+    //             'device_code',
+    //             'device_name',
+    //             'classification',
+    //             'tool_life',
+    //         ])
+    //         ->where('classification', '!=', 2)
+    //         ->where('status', 0)
+    //         ->where('logdel', 0)
+    //         ->get();
+
+    //     if ($devices->isEmpty()) {
+    //         return collect();
+    //     }
+
+    //     $deviceCodes = $devices
+    //         ->pluck('device_code')
+    //         ->filter()
+    //         ->unique()
+    //         ->values();
+
+    //     $actualSos = DB::connection('mysql_rapid_ppd')
+    //         ->table('tbl_dieset as ds')
+    //         ->join(
+    //             'tbl_POReceived as po',
+    //             'po.ItemCode',
+    //             '=',
+    //             'ds.R3Code'
+    //         )
+    //         ->join('tbl_DeliveryConfirmation as dc', function ($join) {
+    //             $join->on('dc.OrderNo', '=', 'po.OrderNo')
+    //                 ->where('dc.logdel', 0);
+    //         })
+    //         ->join(
+    //             'tbl_DeliveryUpdateRecord as du',
+    //             'du.pkid',
+    //             '=',
+    //             'dc.id'
+    //         )
+    //         ->whereIn('ds.R3Code', $deviceCodes)
+    //         ->groupBy('ds.R3Code')
+    //         ->select(
+    //             'ds.R3Code',
+    //             DB::raw(
+    //                 'COALESCE(SUM(du.ActualSO), 0) as total_actual_so'
+    //             )
+    //         )
+    //         ->pluck('total_actual_so', 'R3Code');
+
+    //     return $devices->map(function ($device) use ($actualSos) {
+    //         $toolLife = (float) $device->tool_life;
+
+    //         $totalActualSo = (float) $actualSos->get(
+    //             $device->device_code,
+    //             0
+    //         );
+
+    //         $percentage = $toolLife > 0
+    //             ? ($totalActualSo / $toolLife) * 100
+    //             : 0;
+
+    //         $device->total_actual_so = $totalActualSo;
+    //         $device->percentage = $percentage;
+
+    //         return $device;
+    //     });
+    // }
+
+
+    public function deviceCreateUpdateRepository( ?string $deviceId, array $data) {
+        $fileData = $this->mapUploadFileForLongevityParts($data);
+
+        $deviceData = [
+            'device_code'    => $data['device_code'],
+            'device_name'    => $data['device_name'],
+            'tool_life'      => $data['tool_life'],
+            'yec_sales_qty'  => $data['yec_sales_qty'],
+            'pmi_sales_qty'  => $data['pmi_sales_qty'],
+            'classification' => $data['device_classification'],
+            'process_type'   => $data['process_type'],
+            'attachment'     => $fileData['file_name'] ?? '',
+        ];
+
+        if (empty($deviceId)) {
+            $deviceData['created_by'] = $data['user_id'];
+
+            $device = Device::create($deviceData);
+        } else {
+            $device = Device::findOrFail($deviceId);
+
+            $deviceData['updated_by'] = $data['user_id'];
+
+            $device->update($deviceData);
+        }
+
+        // Recalculate classification for this specific device.
+        $this->updateClassificationRepository(
+            $device->device_code
+        );
+
+        return $device->fresh();
+    }
+
+    public function updateClassificationRepository(?string $deviceCode = null): int {
+        $devices = $this->mapDevicePercentage($deviceCode);
+
+        if ($devices->isEmpty()) {
             return 0;
         }
 
-        // Update all qualifying devices in one query.
-        return Device::query()
-            ->whereIn('id', $deviceIdsToUpdate)
-            ->update([
-                'classification' => $classification,
-            ]);
+        $deviceIdsToOne = $devices
+            ->filter(function ($device) {
+                return $device->percentage >= 70
+                    && (int) $device->classification !== 1;
+            })
+            ->pluck('id')
+            ->all();
+
+        $deviceIdsToZero = $devices
+            ->filter(function ($device) {
+                return $device->percentage < 70
+                    && (int) $device->classification === 1;
+            })
+            ->pluck('id')
+            ->all();
+
+        $updatedToOne = 0;
+        $updatedToZero = 0;
+
+        if (!empty($deviceIdsToOne)) {
+            $updatedToOne = Device::query()
+                ->whereIn('id', $deviceIdsToOne)
+                ->where('classification', '!=', 2)
+                ->update([
+                    'classification' => 1,
+                ]);
+        }
+
+        if (!empty($deviceIdsToZero)) {
+            $updatedToZero = Device::query()
+                ->whereIn('id', $deviceIdsToZero)
+                ->where('classification', 1)
+                ->update([
+                    'classification' => 0,
+                ]);
+        }
+
+        return $updatedToOne + $updatedToZero;
     }
 
-    private function mapDevicePercentage($classification){
-        $devices = Device::query()
+    private function mapDevicePercentage(?string $deviceCode = null) {
+        $query = Device::query()
             ->select([
                 'id',
                 'device_code',
                 'device_name',
                 'classification',
+                'tool_life',
             ])
-            ->where('classification', '!=', '2')
+            ->where('classification', '!=', 2)
             ->where('status', 0)
-            ->where('logdel', 0)
-            ->get();
+            ->where('logdel', 0);
+
+        // Filter by device_code when provided.
+        if ($deviceCode !== null) {
+            $query->where('device_code', $deviceCode);
+        }
+
+        $devices = $query->get();
 
         if ($devices->isEmpty()) {
             return collect();
@@ -269,6 +479,7 @@ class DeviceRepository implements DeviceInterface
         });
     }
 
+
     public function getPpdDsrlmUserApproveByRepository(){
         return UserManagement::with('user_management_rapidx_user_info')->where('classification', 1)->where('status', 0)->where('logdel', 0)->get();
     }
@@ -282,17 +493,19 @@ class DeviceRepository implements DeviceInterface
 
     public function deviceResetToolLifeRepository(array $data){
         $getDeviceInfo = $this->getDeviceInfo($data['get_device_code']);
-        $fileData = $this->mapUploadFile($data);
+        $fileData = $this->mapUploadFileForResetDevice($data);
 
         $deviceData = [
-            'device_code'   => $data['get_device_code'],
-            'from'          => $data['reset_date_from'],
-            'to'            => $data['reset_date_to'],
-            'remark'        => $data['remark'],
-            'variance'      => $data['reset_last_variance'],
-            'uploaded_file' => $fileData['file_name'],
-            'approve_by'    => $data['reset_approve_by'],
-            'reset_by'      => $data['user_id'],
+            'device_code'           => $data['get_device_code'],
+            'from'                  => $data['reset_date_from'],
+            'to'                    => $data['reset_date_to'],
+            'remark'                => $data['remark'],
+            'variance'              => $data['reset_last_variance'],
+            'uploaded_file'         => $fileData['file_name'],
+            'approve_by'            => $data['reset_approve_by'],
+            'reset_yec_sales_qty'   => $data['reset_yec_sales_qty'],
+            'reset_pmi_sales_qty'   => $data['reset_pmi_sales_qty'],
+            'reset_by'              => $data['user_id'],
         ];
 
         DeviceResetHistory::create($deviceData);
@@ -344,14 +557,14 @@ class DeviceRepository implements DeviceInterface
     }
 
 
-    private function mapUploadFile(array $data): array{
+    private function mapUploadFileForResetDevice(array $data): array{
         $uploadedFiles = [];
         if (isset($data['reset_upload_file'])) {
-            foreach ($data['reset_upload_file'] as $rawMatsFile) {
-                $uploadOriginalName = $rawMatsFile->getClientOriginalName();
+            foreach ($data['reset_upload_file'] as $reset_device_file_upload) {
+                $uploadOriginalName = $reset_device_file_upload->getClientOriginalName();
                 Storage::putFileAs(
                     'public/reset_device_tool_life',
-                    $rawMatsFile,
+                    $reset_device_file_upload,
                     $uploadOriginalName
                 );
                 $uploadedFiles[] = $uploadOriginalName;
@@ -386,6 +599,17 @@ class DeviceRepository implements DeviceInterface
 
     public function downloadFileRepository(string $filename){
         $folder = 'reset_device_tool_life';
+        $path = storage_path("app/public/$folder/" . $filename);
+
+        if (!file_exists($path)) {
+            abort(404, 'File not found');
+        }
+
+        return response()->download($path);
+    }
+
+    public function deviceDownloadFileRepository(string $filename){
+        $folder = 'longevity_parts';
         $path = storage_path("app/public/$folder/" . $filename);
 
         if (!file_exists($path)) {

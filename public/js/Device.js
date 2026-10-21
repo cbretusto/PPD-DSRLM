@@ -21,7 +21,7 @@ function DeviceCreateUpdate() {
                 toastr.success('Successfully saved!');
                 dataTableDevice.draw();
             }else{
-                toastr.error('Device already exist!');
+                toastr.error('Device already exists!');
                 $('#modalDeviceCreateUpdate').modal('hide');
             }
             $("#iBtnDeviceIcon").removeClass('spinner-border spinner-border-sm');
@@ -56,7 +56,7 @@ function GetDeviceInfoByIdToEdit(deviceId){
                 $("#txtToolLife").val(requestDeviceInfo[0].tool_life);
                 $("#txtYecSalesQty").val(requestDeviceInfo[0].yec_sales_qty);
                 $("#txtPmiSalesQty").val(requestDeviceInfo[0].pmi_sales_qty);
-                $("#slctDeviceClassification").val(requestDeviceInfo[0].classification);
+                $("#slctDeviceClassification").val(requestDeviceInfo[0].classification).trigger('change');
                 $(`input[name="process_type"][value="${requestDeviceInfo[0].process_type}"]`).prop('checked', true);
             }
         },
@@ -144,7 +144,7 @@ function toggleHistoryResetFilters() {
     }
 }
 
-function GetDeviceHistoryLastVariance(deviceCode, dateFrom, dateTo){
+function GetDeviceHistoryLastVariance(deviceCode, dateFrom, dateTo, historySalesQuantityYEC, historySalesQuantityPMI){
     const ajaxGetDeviceHistoryLastVariance = {
         url: 'device_history_last_variance',
         method: 'GET',
@@ -174,10 +174,14 @@ function GetDeviceHistoryLastVariance(deviceCode, dateFrom, dateTo){
                 });
                 return;
             }
+                console.log('historySalesQuantityYEC', historySalesQuantityYEC);
+                console.log('historySalesQuantityPMI', historySalesQuantityPMI);
 
             $('#getDeviceCode').val(deviceCode);
             $('#resetDateFrom').val(dateFrom);
             $('#resetDateTo').val(dateTo);
+            $('#resetYecSalesQty').val(historySalesQuantityYEC).trigger('change');
+            $('#resetPmiSalesQty').val(historySalesQuantityPMI).trigger('change');
             $('#resetLastVariance').val(response.lastVariance);
 
             $('#deviceResetModal').modal('show');
@@ -352,3 +356,22 @@ function UpdateClassification(classification, csrfToken){
     ajaxRequest(ajaxUpdateClassification);
 }
 
+function toggleLongevityFile() {
+    const classification = $('#slctDeviceClassification').val();
+    const isWaitingForLongevity = classification === '2';
+
+    $('#divLongevityFile').toggleClass(
+        'd-none',
+        !isWaitingForLongevity
+    );
+
+    // Enable/disable file upload
+    $('#fileLongevity')
+        .prop('disabled', !isWaitingForLongevity)
+        .prop('required', isWaitingForLongevity);
+
+    // Clear file kapag ibang classification ang pinili
+    if (!isWaitingForLongevity) {
+        $('#fileLongevity').val('');
+    }
+}

@@ -54,6 +54,8 @@ class DeviceService
                                 pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
                                 yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
                                 device-total_qty="' . $deviceDetail->total_qty . '"
+                                device-classification="' . $deviceDetail->classification . '"
+                                device-attachment="' . $deviceDetail->attachment . '"
                                 dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
                                 dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
                                 dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
@@ -159,11 +161,39 @@ class DeviceService
                 ';
             })
 
+        ->addColumn('attachment', function ($deviceDetail) {
+            $result = '';
+            $attachments = $deviceDetail->attachment;
+
+            if (empty($attachments)) {
+                return '-';
+            }
+
+            $files = explode(' || ', $attachments);
+
+            foreach ($files as $file) {
+                $file = trim($file);
+
+                if (!empty($file)) {
+                    $url = route('device_download_file', [
+                        'filename' => $file
+                    ]);
+
+                    $result .= "<a href='{$url}' title='{$file}' target='_blank'>"
+                        . e($file)
+                        . "</a><br>";
+                }
+            }
+
+            return $result ?: '-';
+        })
+
             ->rawColumns([
                 'action',
                 'status',
                 'total_actual_so',
-                'percentage'
+                'percentage',
+                'attachment'
             ])
 
             ->make(true);
@@ -232,21 +262,25 @@ class DeviceService
 
     public function deviceCreateUpdateService(?string $deviceId, array $data, ?string $userId): array{
         DB::beginTransaction();
-
         try {
             $exists = $this->deviceRepo->existsDevice([
-                'device_code'       => $data['device_code'],
-                'device_name'       => $data['device_name'],
-                'tool_life'         => $data['tool_life'],
-                'yec_sales_qty'     => $data['yec_sales_qty'],
-                'pmi_sales_qty'     => $data['pmi_sales_qty'],
-                'classification'    => $data['device_classification'],
-                'process_type'      => $data['process_type'],
-                'logdel'            => 0,
-            ], $deviceId);
+                'id'            => $deviceId,
+                'device_code'   => $data['device_code'],
+                'tool_life'     => $data['tool_life'],
+                'logdel'        => 0,
+            ]);
 
-            if ($exists) {
-                return ['hasError' => 1, 'message' => 'Device already exists'];
+            $newData = $this->deviceRepo->newDevice([
+                'device_code'   => $data['device_code'],
+            ]);
+
+            // dd($exists);
+            if ($exists == true) {
+                return ['hasError' => 1, 'message' => 'Device Code already exists'];
+            }
+
+            if ($deviceId === null && $newData == true) {
+                return ['hasError' => 1, 'message' => 'Device Code already exists.'];
             }
 
             $data['user_id'] = $userId;
@@ -287,7 +321,7 @@ class DeviceService
 
         try {
             $updatedCount = $this->deviceRepo
-                ->updateClassificationRepository($classification);
+                ->updateClassificationRepository();
 
             DB::commit();
 
@@ -632,6 +666,10 @@ class DeviceService
 
     public function downloadFileService(string $filename){
         return $this->deviceRepo->downloadFileRepository($filename);
+    }
+
+    public function deviceDownloadFileService(string $filename){
+        return $this->deviceRepo->deviceDownloadFileRepository($filename);
     }
 
     public function getPpdDsrlmUserApproveByService(){

@@ -509,13 +509,7 @@
                                         <i class="fas fa-file-upload"></i>
                                     </span>
 
-                                    <input
-                                        type="file"
-                                        id="fileLongevity"
-                                        name="longevity_file"
-                                        class="form-control bg-light border-start-0"
-                                        accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png"
-                                    >
+                                    <input type="file" id="fileLongevity" name="longevity_parts_upload_file[]" class="form-control bg-light border-start-0" accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png" multiple>
                                 </div>
 
                                 <small class="text-muted">
@@ -1087,6 +1081,69 @@
                             <input type="number" class="form-control fw-bold" id="resetLastVariance" name="reset_last_variance" readonly>
                         </div>
 
+                        <!-- YEC & PMI Sales Qty -->
+                        <div class="mb-4">
+                            <div class="row g-3">
+
+                                <!-- YEC Sales Qty - Left -->
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-2 p-2 me-2">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </div>
+
+                                        <div>
+                                            <div class="fw-semibold small">
+                                                YEC Sales Quantity
+                                            </div>
+                                            <div class="text-muted small">
+                                                PCS.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input
+                                        type="number"
+                                        class="form-control fw-bold"
+                                        id="resetYecSalesQty"
+                                        name="reset_yec_sales_qty"
+                                        placeholder="Enter YEC sales qty"
+                                        min="0"
+                                        step="any"
+                                    >
+                                </div>
+
+                                <!-- PMI Sales Qty - Right -->
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-info bg-opacity-10 text-info rounded-2 p-2 me-2">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </div>
+
+                                        <div>
+                                            <div class="fw-semibold small">
+                                                PMI Sales Quantity
+                                            </div>
+                                            <div class="text-muted small">
+                                                PCS.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input
+                                        type="number"
+                                        class="form-control fw-bold"
+                                        id="resetPmiSalesQty"
+                                        name="reset_pmi_sales_qty"
+                                        placeholder="Enter PMI sales qty"
+                                        min="0"
+                                        step="any"
+                                    >
+                                </div>
+
+                            </div>
+                        </div>
+                        <hr>
                         <!-- Upload -->
                         <div class="mb-4">
                             <div class="d-flex align-items-center mb-2">
@@ -1231,12 +1288,16 @@
         let dataTableDeviceHistory
         let dataTableDeviceResetHistory
         let dataTableDeviceHistoryByDate
+        let historySalesQuantityYEC
+        let historySalesQuantityPMI
         let deviceCode
         let deviceName
         let toolLife
         let deviceDateFrom
         let deviceDateTo
         let processType = ""
+        let historyClassification = ''
+        let historyAttachment = ''
 
         $(document).ready(function () {
             resetModalFormValues();
@@ -1365,7 +1426,10 @@
             });
 
             $('#modalDeviceCreateUpdate').on('hidden.bs.modal', '.modal', function () {
+                console.log('modalDeviceCreateUpdate hidden');
                 $('.reset').removeClass('btn-outline-dark');
+                $('#divLongevityFile').addClass('d-none');
+                $('#fileLongevity').prop('disabled', true);
             });
 
             // ==================================================================================================
@@ -1420,6 +1484,8 @@
                 diesetDrawingRevision   = $(this).attr('dieset-drawing_revision');
                 historySalesQuantityYEC   = $(this).attr('yec-sales-quantity');
                 historySalesQuantityPMI   = $(this).attr('pmi-sales-quantity');
+                historyClassification      = $(this).attr('device-classification');
+                historyAttachment          = $(this).attr('device-attachment');
 
                 let totalSalesQuantity = Number(historySalesQuantityYEC) + Number(historySalesQuantityPMI);
                 $("#historyDeviceName").text(deviceName);
@@ -1448,9 +1514,19 @@
             $('#buttonResetHistoryFilter').click(function (e) {
                 e.preventDefault();
 
+                console.log('historyClassification', historyClassification);
+                console.log('historyAttachment', historyAttachment);
+
+                if(historyClassification == 2 && !historyAttachment){
+                    alert('Please upload an attachment for Longevity Parts before resetting.');
+                    return;
+                }
+
                 const dateFrom = $('#historyDateFrom').val();
                 const dateTo = $('#historyDateTo').val();
                 deviceCode = $('#historyDeviceCode').text();
+                historySalesQuantityYEC = $('#historySalesQuantityYEC').text().trim().replace(/,/g, '');
+                historySalesQuantityPMI = $('#historySalesQuantityPMI').text().trim().replace(/,/g, '');
 
                 if (!dateFrom || !dateTo) {
                     Swal.fire({
@@ -1479,7 +1555,7 @@
                 //     }
                 // });
 
-                GetDeviceHistoryLastVariance(deviceCode, dateFrom, dateTo);
+                GetDeviceHistoryLastVariance(deviceCode, dateFrom, dateTo, historySalesQuantityYEC, historySalesQuantityPMI);
             });
 
             $("#deviceResetForm").submit(function(event){
@@ -1603,28 +1679,9 @@
                 ResetDeviceApproval();
             });
 
-            function toggleLongevityFile() {
-                const classification = $('#slctDeviceClassification').val();
-                const isWaitingForLongevity = classification === '2';
-
-                $('#divLongevityFile').toggleClass(
-                    'd-none',
-                    !isWaitingForLongevity
-                );
-
-                // Enable/disable file upload
-                $('#fileLongevity')
-                    .prop('disabled', !isWaitingForLongevity)
-                    .prop('required', isWaitingForLongevity);
-
-                // Clear file kapag ibang classification ang pinili
-                if (!isWaitingForLongevity) {
-                    $('#fileLongevity').val('');
-                }
-            }
-
             // Classification change event
             $('#slctDeviceClassification').on('change', function () {
+                console.log('Device classification changed to');
                 toggleLongevityFile();
             });
 
