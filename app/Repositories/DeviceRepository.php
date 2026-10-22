@@ -132,46 +132,101 @@ class DeviceRepository implements DeviceInterface
         ->values();
     }
 
-    // public function deviceCreateUpdateRepository(?string $deviceId, array $data){
-    //     $fileData = $this->mapUploadFileForLongevityParts($data);
-    //     $deviceData = [
-    //         'device_code'       => $data['device_code'],
-    //         'device_name'       => $data['device_name'],
-    //         'tool_life'         => $data['tool_life'],
-    //         'yec_sales_qty'     => $data['yec_sales_qty'],
-    //         'pmi_sales_qty'     => $data['pmi_sales_qty'],
-    //         'classification'    => $data['device_classification'],
-    //         'process_type'      => $data['process_type'],
-    //         'attachment'        => $fileData['file_name'] ?? '',
-    //     ] ;
-
-    //     if(empty($deviceId)){
-    //         $deviceData['created_by'] = $data['user_id'];
-    //         return Device::create($deviceData);
-    //     }
-
-    //     $device = Device::findOrFail($deviceId);
-    //     $deviceData['updated_by'] = $data['user_id'];
-    //     $device->update($deviceData);
-
-    //     return $device;
-    // }
-
-    private function mapUploadFileForLongevityParts(array $data): array{
+    private function mapUploadFileForLongevityParts( array $data, ?string $deviceId = null): array {
         $uploadedFiles = [];
-        if (isset($data['longevity_parts_upload_file'])) {
-            foreach ($data['longevity_parts_upload_file'] as $deviceUploadFile) {
-                $uploadOriginalName = $deviceUploadFile->getClientOriginalName();
-                Storage::putFileAs(
-                    'public/longevity_parts',
-                    $deviceUploadFile,
-                    $uploadOriginalName
-                );
-                $uploadedFiles[] = $uploadOriginalName;
+        $filesToUpload = [];
+
+        $files = $data['longevity_parts_upload_file'] ?? [];
+
+        if (empty($files)) {
+            return [
+                'hasError' => 0,
+                'file_name' => ''
+            ];
+        }
+
+        // First: sanitize and validate all filenames
+        foreach ($files as $deviceUploadFile) {
+            $originalName = $deviceUploadFile->getClientOriginalName();
+
+            $extension = $deviceUploadFile->getClientOriginalExtension();
+
+            $filename = pathinfo(
+                $originalName,
+                PATHINFO_FILENAME
+            );
+
+            // Replace special characters with underscores
+            $filename = preg_replace(
+                '/[^a-zA-Z0-9_-]/',
+                '_',
+                $filename
+            );
+
+            $filename = trim($filename, '_');
+
+            // Prevent empty filenames
+            if ($filename === '') {
+                $filename = 'file';
             }
+
+            // Normalize extension as well
+            $extension = preg_replace(
+                '/[^a-zA-Z0-9]/',
+                '',
+                $extension
+            );
+
+            $safeFilename = $filename
+                . ($extension !== '' ? '.' . $extension : '');
+
+            // Check duplicate filename in attachment column
+            $query = Device::query()
+                ->whereRaw(
+                    "FIND_IN_SET(?, REPLACE(attachment, ' || ', ',')) > 0",
+                    [$safeFilename]
+                );
+
+            // Exclude current device during update
+            if ($deviceId !== null) {
+                $query->where('id', '!=', $deviceId);
+            }
+
+            // Check database duplicate
+            if ($query->exists()) {
+                return [
+                    'hasError' => 2,
+                    'message' => "Filename '{$safeFilename}' already exists."
+                ];
+            }
+
+            // Check duplicate filename within current upload
+            if (in_array($safeFilename, $uploadedFiles, true)) {
+                return [
+                    'hasError' => 2,
+                    'message' => "Filename '{$safeFilename}' is duplicated in the upload."
+                ];
+            }
+
+            $uploadedFiles[] = $safeFilename;
+
+            $filesToUpload[] = [
+                'file' => $deviceUploadFile,
+                'filename' => $safeFilename,
+            ];
+        }
+
+        // Second: upload only after all filenames pass validation
+        foreach ($filesToUpload as $fileData) {
+            Storage::putFileAs(
+                'public/longevity_parts',
+                $fileData['file'],
+                $fileData['filename']
+            );
         }
 
         return [
+            'hasError' => 0,
             'file_name' => implode(' || ', $uploadedFiles)
         ];
     }
@@ -201,128 +256,17 @@ class DeviceRepository implements DeviceInterface
         ]);
     }
 
-    // public function updateClassificationRepository(): int{
-    //     $classification = null;
-    //     $devices = $this->mapDevicePercentage($classification);
 
-    //     if ($devices->isEmpty()) {
-    //         return 0;
-    //     }
+    public function deviceCreateUpdateRepository( ?string $deviceId, array $data): array {
+        $fileData = $this->mapUploadFileForLongevityParts(
+            $data,
+            $deviceId
+        );
 
-    //     $deviceIdsToOne = $devices
-    //         ->filter(function ($device) {
-    //             return $device->percentage >= 70
-    //                 && (int) $device->classification !== 1;
-    //         })
-    //         ->pluck('id')
-    //         ->all();
-
-    //     $deviceIdsToZero = $devices
-    //         ->filter(function ($device) {
-    //             return $device->percentage < 70
-    //                 && (int) $device->classification === 1;
-    //         })
-    //         ->pluck('id')
-    //         ->all();
-
-    //     $updatedToOne = 0;
-    //     $updatedToZero = 0;
-
-    //     if (!empty($deviceIdsToOne)) {
-    //         $updatedToOne = Device::query()
-    //             ->whereIn('id', $deviceIdsToOne)
-    //             ->where('classification', '!=', 2)
-    //             ->update([
-    //                 'classification' => 1,
-    //             ]);
-    //     }
-
-    //     if (!empty($deviceIdsToZero)) {
-    //         $updatedToZero = Device::query()
-    //             ->whereIn('id', $deviceIdsToZero)
-    //             ->where('classification', 1)
-    //             ->update([
-    //                 'classification' => 0,
-    //             ]);
-    //     }
-
-    //     return $updatedToOne + $updatedToZero;
-    // }
-
-    // private function mapDevicePercentage($classification){
-    //     $devices = Device::query()
-    //         ->select([
-    //             'id',
-    //             'device_code',
-    //             'device_name',
-    //             'classification',
-    //             'tool_life',
-    //         ])
-    //         ->where('classification', '!=', 2)
-    //         ->where('status', 0)
-    //         ->where('logdel', 0)
-    //         ->get();
-
-    //     if ($devices->isEmpty()) {
-    //         return collect();
-    //     }
-
-    //     $deviceCodes = $devices
-    //         ->pluck('device_code')
-    //         ->filter()
-    //         ->unique()
-    //         ->values();
-
-    //     $actualSos = DB::connection('mysql_rapid_ppd')
-    //         ->table('tbl_dieset as ds')
-    //         ->join(
-    //             'tbl_POReceived as po',
-    //             'po.ItemCode',
-    //             '=',
-    //             'ds.R3Code'
-    //         )
-    //         ->join('tbl_DeliveryConfirmation as dc', function ($join) {
-    //             $join->on('dc.OrderNo', '=', 'po.OrderNo')
-    //                 ->where('dc.logdel', 0);
-    //         })
-    //         ->join(
-    //             'tbl_DeliveryUpdateRecord as du',
-    //             'du.pkid',
-    //             '=',
-    //             'dc.id'
-    //         )
-    //         ->whereIn('ds.R3Code', $deviceCodes)
-    //         ->groupBy('ds.R3Code')
-    //         ->select(
-    //             'ds.R3Code',
-    //             DB::raw(
-    //                 'COALESCE(SUM(du.ActualSO), 0) as total_actual_so'
-    //             )
-    //         )
-    //         ->pluck('total_actual_so', 'R3Code');
-
-    //     return $devices->map(function ($device) use ($actualSos) {
-    //         $toolLife = (float) $device->tool_life;
-
-    //         $totalActualSo = (float) $actualSos->get(
-    //             $device->device_code,
-    //             0
-    //         );
-
-    //         $percentage = $toolLife > 0
-    //             ? ($totalActualSo / $toolLife) * 100
-    //             : 0;
-
-    //         $device->total_actual_so = $totalActualSo;
-    //         $device->percentage = $percentage;
-
-    //         return $device;
-    //     });
-    // }
-
-
-    public function deviceCreateUpdateRepository( ?string $deviceId, array $data) {
-        $fileData = $this->mapUploadFileForLongevityParts($data);
+        // Return error if filename already exists
+        if (($fileData['hasError'] ?? 0) == 2) {
+            return $fileData;
+        }
 
         $deviceData = [
             'device_code'    => $data['device_code'],
@@ -347,12 +291,15 @@ class DeviceRepository implements DeviceInterface
             $device->update($deviceData);
         }
 
-        // Recalculate classification for this specific device.
+        // Recalculate classification for this device
         $this->updateClassificationRepository(
             $device->device_code
         );
 
-        return $device->fresh();
+        return [
+            'hasError' => 0,
+            'device' => $device->fresh(),
+        ];
     }
 
     public function updateClassificationRepository(?string $deviceCode = null): int {

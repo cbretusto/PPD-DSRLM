@@ -1,5 +1,5 @@
 function DeviceCreateUpdate() {
-      const form = $('#formDevice')[0];
+    const form = $('#formDevice')[0];
     const formData = new FormData(form);
     const ajaxDeviceCreateUpdate = {
         url: "device_create_update",
@@ -20,10 +20,13 @@ function DeviceCreateUpdate() {
                 $('#modalDeviceCreateUpdate').modal('hide');
                 toastr.success('Successfully saved!');
                 dataTableDevice.draw();
-            }else{
+            }else if(response['hasError'] == 1) {
                 toastr.error('Device already exists!');
                 $('#modalDeviceCreateUpdate').modal('hide');
+            }else if(response['hasError'] == 2) {
+                toastr.error('File name is exists!');
             }
+
             $("#iBtnDeviceIcon").removeClass('spinner-border spinner-border-sm');
             $("#btnDevice").removeClass('disabled');
             $("#iBtnDeviceIcon").addClass('fa fa-check');

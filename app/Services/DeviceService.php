@@ -260,38 +260,64 @@ class DeviceService
             ->make(true);
     }
 
-    public function deviceCreateUpdateService(?string $deviceId, array $data, ?string $userId): array{
+    public function deviceCreateUpdateService( ?string $deviceId, array $data, ?string $userId): array {
         DB::beginTransaction();
+
         try {
             $exists = $this->deviceRepo->existsDevice([
-                'id'            => $deviceId,
-                'device_code'   => $data['device_code'],
-                'tool_life'     => $data['tool_life'],
-                'logdel'        => 0,
+                'id'          => $deviceId,
+                'device_code' => $data['device_code'],
+                'tool_life'   => $data['tool_life'],
+                'logdel'      => 0,
             ]);
 
             $newData = $this->deviceRepo->newDevice([
-                'device_code'   => $data['device_code'],
+                'device_code' => $data['device_code'],
             ]);
 
-            // dd($exists);
             if ($exists == true) {
-                return ['hasError' => 1, 'message' => 'Device Code already exists'];
+                DB::rollBack();
+
+                return [
+                    'hasError' => 1,
+                    'message' => 'Device Code already exists.'
+                ];
             }
 
             if ($deviceId === null && $newData == true) {
-                return ['hasError' => 1, 'message' => 'Device Code already exists.'];
+                DB::rollBack();
+
+                return [
+                    'hasError' => 1,
+                    'message' => 'Device Code already exists.'
+                ];
             }
 
             $data['user_id'] = $userId;
-            $this->deviceRepo->deviceCreateUpdateRepository($deviceId, $data);
+
+            $result = $this->deviceRepo
+                ->deviceCreateUpdateRepository($deviceId, $data);
+
+            if (($result['hasError'] ?? 0) == 2) {
+                DB::rollBack();
+
+                return [
+                    'hasError' => 2,
+                    'message' => $result['message'] ?? 'Filename already exists.'
+                ];
+            }
 
             DB::commit();
+
             return ['hasError' => 0];
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return ['hasError' => 1, 'exceptionError' => $e->getMessage()];
+
+            return [
+                'hasError' => 1,
+                'exceptionError' => $e->getMessage()
+            ];
         }
     }
 
