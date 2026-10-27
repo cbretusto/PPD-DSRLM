@@ -43,6 +43,26 @@
     </style>
 
     <style type="text/css">
+    #tableDevice_wrapper.table-loading {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    #tableDevice_wrapper.table-loading {
+        position: relative;
+    }
+
+    #tableDevice_wrapper.table-loading::after {
+        content: "Loading device data, please wait...";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.75);
+        font-weight: bold;
+        z-index: 100;
+    }
         table.table thead th{
             text-align: center !important;
             vertical-align: middle;
@@ -284,7 +304,7 @@
                                 </div>
 
                                 <div class="ms-auto">
-                                    <button type="button" class="btn btn-dark" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
+                                    <button type="button" class="btn btn-dark load-table" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
                                         <i class="fa fa-plus fa-md me-1"></i>
                                         New Data
                                     </button>
@@ -294,7 +314,7 @@
                             <div class="card-body">
                                 <div class="position-relative">
                                     <meta name="csrf-token" content="{{ csrf_token() }}">
-                                    <button type="button" class="btn btn-info" id="btnUpdateAllClassification">
+                                    <button type="button" class="btn btn-info load-table" id="btnUpdateAllClassification">
                                         <i class="fa fa-plus fa-md me-1" id="iBtnUpdateAllClassificationIcon"></i>
                                         Update All Classification
                                     </button>
@@ -492,24 +512,32 @@
                                 <select class="form-select bg-light border-start-0" id="slctDeviceClassification" name="device_classification">
                                     <option value="" disabled>Select classification</option>
                                     <option value="0" selected>N/A</option>
-                                    <option value="1">For Maintenance</option>
-                                    <option value="2">Waiting for Longevity</option>
+                                    <option value="1">For Longevity Application</option>
+                                    <option value="2">Waiting for Longevity Parts</option>
                                     <option value="3">For YEC Approval</option>
+                                    <option value="4">Ongoing Longevity Application</option>
                                 </select>
                             </div>
 
                             <!-- Classification File Upload -->
                             <div class="mb-3 d-none" id="divLongevityFile">
-                                <label for="fileLongevity" class="form-label fw-semibold">
+                                <label for="fileLongevityUpload" class="form-label fw-semibold">
                                     Upload Longevity File
                                 </label>
 
-                                <div class="input-group input-group-lg">
+                                <div class="input-group input-group-lg" id="divLongevityFileInput">
                                     <span class="input-group-text bg-light border-end-0 text-muted">
                                         <i class="fas fa-file-upload"></i>
                                     </span>
 
-                                    <input type="file" id="fileLongevity" name="longevity_parts_upload_file[]" class="form-control bg-light border-start-0" accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                    <input type="file" id="fileLongevityUpload" name="longevity_parts_upload_file[]" class="form-control bg-light border-start-0" accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                </div>
+
+                                <div class="input-group input-group-lg d-none" id="divLongevityTextInput">
+                                    <button type="button" class="btn btn-sm btn-outline-dark" id="btnReuploadLongevityFile">
+                                        <i class="fa fa-file"></i> Click here to re-upload the file
+                                    </button>
+                                    <input type="text" id="textLongevityUpload" name="longevity_parts_upload_file" class="form-control bg-light border-start-0" readonly>
                                 </div>
 
                                 <small class="text-muted">
@@ -644,7 +672,6 @@
                             <div>
                                 <h5 class="mb-1 fw-bold" id="h4DeviceHistoryTitle">
                                     Device History
-                                    {{-- <input type="text" class="input_hidden1" name="get_device_code" placeholder="Device Code" id="txtGetDeviceCode" readonly> --}}
                                 </h5>
 
                                 <small class="opacity-75">
@@ -957,6 +984,8 @@
                                             <th>Date From</th>
                                             <th>Date To</th>
                                             <th>Tool Life<br>Balance</th>
+                                            <th>YEC<br>Sales Qty</th>
+                                            <th>PMI<br>Sales Qty</th>
                                             <th>Upload File</th>
                                             <th>Tool Life<br>Reset By</th>
                                             <th>Approver</th>
@@ -1279,6 +1308,71 @@
             </div>
         </div>
     </div><!-- Approval Modal End -->
+
+    <!-- Device History Change Status Modal Start -->
+    <div class="modal fade" id="modalDeviceHistoryChangeStatus" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+                <form method="post" id="formDeviceHistoryChangeStatus" autocomplete="off">
+                    @csrf
+                    <!-- Top Header -->
+                    <div class="bg-dark bg-gradient text-white p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-exchange-alt fs-4"></i>
+                                </div>
+
+                                <div>
+                                    <h5 class="mb-1 fw-bold" id="h4DeviceHistoryChangeStatusTitle">
+                                        Change Status
+                                    </h5>
+
+                                    <small class="opacity-75">
+                                        Update device history status
+                                    </small>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body p-4">
+                        <input type="text" class="input_hidden" name="device_id" placeholder="Device Id" id="txtDeviceHistoryChangeStatusId">
+                        <input type="text" class="input_hidden" name="status" placeholder="Status" id="txtDeviceHistoryChangeStatus">
+                        <div class="text-center py-2">
+                            <div class="bg-light rounded-4 p-4">
+                                <div class="mb-3">
+                                    <div class="bg-dark bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                        <i class="fas fa-screwdriver-wrench text-dark fs-3"></i>
+                                    </div>
+                                </div>
+
+                                <h6 class="fw-bold mb-2">Change Device Status?</h6>
+
+                                <p class="text-muted small mb-0" id="lblDeviceHistoryChangeStatusLabel"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer justify-content-between bg-light">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>
+                            Close
+                        </button>
+
+                        <button type="submit" id="btnDeviceHistoryChangeStatus" class="btn btn-dark px-4">
+                            <i id="iBtnDeviceHistoryChangeStatusIcon" class="fas fa-check me-1"></i>
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 {{-- JS CONTENT --}}
@@ -1286,23 +1380,26 @@
     <script type="text/javascript">
         let dataTableDevice
         let dataTableDeviceHistory
-        let dataTableDeviceResetHistory
-        let dataTableDeviceHistoryByDate
         let historySalesQuantityYEC
         let historySalesQuantityPMI
+        let dataTableDeviceResetHistory
+        let dataTableDeviceHistoryByDate
+        let deviceId
+        let toolLife
         let deviceCode
         let deviceName
-        let toolLife
-        let deviceDateFrom
+        let remarkType
         let deviceDateTo
+        let deviceDateFrom
         let processType = ""
-        let historyClassification = ''
         let historyAttachment = ''
+        let historyClassification = ''
 
         $(document).ready(function () {
             resetModalFormValues();
             UserManagementGetApproveBy($('.get-ppd_dsrlm-user-approve_by'));
-            RemarkGet($('.get-remark'));
+            toggleLongevityFile();
+            // GetRemark($('.get-remark'));
 
             $('.select2bs5').each(function () {
                 $(this).select2({
@@ -1372,11 +1469,13 @@
                         "searchable": true,
                         "render": function (data, type, row) {
                             if(row.classification == 1){
-                                return "For Maintenance";
+                                return "For Longevity Application";
                             }else if(row.classification == 2){
                                 return "Waiting for Longevity Parts";
                             }else if(row.classification == 3){
                                 return "For YEC Approval";
+                            }else if(row.classification == 4){
+                                return "Ongoing Longevity Application";
                             }else{
                                 return "N/A";
                             }
@@ -1392,6 +1491,14 @@
                 ]
             });
 
+            $("#tableDevice").on("preXhr.dt", function () {
+                $("#tableDevice_wrapper").addClass("table-loading");
+                $('.load-table').prop('disabled', true);
+            }).on("xhr.dt", function () {
+                $("#tableDevice_wrapper").removeClass("table-loading");
+                $('.load-table').prop('disabled', false);
+            });
+
             $("#formDevice").submit(function(event){
                 event.preventDefault();
                 DeviceCreateUpdate();
@@ -1399,14 +1506,24 @@
 
             $(document).on('click', '.actionUpdateDevice', function(e){
                 e.preventDefault();
-                let deviceId = $(this).attr('device-id');
+                deviceId = $(this).attr('device-id');
                     $("#txtDeviceId").val(deviceId);
                     GetDeviceInfoByIdToEdit(deviceId);
+
+                    remarkType = 2
+                    console.log('Device remarkType', remarkType);
+                    GetRemark($('.get-remark'), Number(remarkType));
+            });
+
+            $('#btnReuploadLongevityFile').click(function (e){
+                e.preventDefault();
+                $('#divLongevityFileInput').removeClass('d-none');
+                $('#divLongevityTextInput').addClass('d-none');
             });
 
             $(document).on('click', '.actionDeviceChangeStatus', function(){
                 let deviceStatus = $(this).attr('status');
-                let deviceId = $(this).attr('device-id');
+                deviceId = $(this).attr('device-id');
                 $("#txtDeviceChangeStatus").val(deviceStatus);
                 $("#txtDeviceChangeStatusId").val(deviceId);
 
@@ -1429,7 +1546,7 @@
                 console.log('modalDeviceCreateUpdate hidden');
                 $('.reset').removeClass('btn-outline-dark');
                 $('#divLongevityFile').addClass('d-none');
-                $('#fileLongevity').prop('disabled', true);
+                $('#fileLongevityUpload').prop('disabled', true);
             });
 
             // ==================================================================================================
@@ -1482,10 +1599,12 @@
                 deviceTotalQty          = $(this).attr('device-total_qty');
                 diesetDrawingNo         = $(this).attr('dieset-drawing_no');
                 diesetDrawingRevision   = $(this).attr('dieset-drawing_revision');
-                historySalesQuantityYEC   = $(this).attr('yec-sales-quantity');
-                historySalesQuantityPMI   = $(this).attr('pmi-sales-quantity');
-                historyClassification      = $(this).attr('device-classification');
-                historyAttachment          = $(this).attr('device-attachment');
+                historySalesQuantityYEC = $(this).attr('yec-sales-quantity');
+                historySalesQuantityPMI = $(this).attr('pmi-sales-quantity');
+                historyClassification   = $(this).attr('device-classification');
+                historyAttachment       = $(this).attr('device-attachment');
+                remarkType              = 1
+                console.log('Reset Device remarkType', remarkType);
 
                 let totalSalesQuantity = Number(historySalesQuantityYEC) + Number(historySalesQuantityPMI);
                 $("#historyDeviceName").text(deviceName);
@@ -1505,9 +1624,11 @@
                 dataTableDeviceHistory.draw();
                 dataTableDeviceResetHistory.draw();
 
+                GetRemark($('.get-remark'), Number(remarkType))
+
                 setTimeout(() => {
                     const totalShipment = $("#tableDeviceHistory tbody tr").eq(0).find("td").eq(2).text().trim();
-                    $('#historyTotalQuantity').text(totalShipment);
+                    $('#historyTotalQuantity').text(totalShipment || 0);
                 }, 2345);
             });
 
@@ -1517,8 +1638,24 @@
                 console.log('historyClassification', historyClassification);
                 console.log('historyAttachment', historyAttachment);
 
+                console.log('historySalesQuantityYEC', historySalesQuantityYEC);
+                console.log('historySalesQuantityPMI', historySalesQuantityPMI);
+
                 if(historyClassification == 2 && !historyAttachment){
-                    alert('Please upload an attachment for Longevity Parts before resetting.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Attachment',
+                        text: 'Please upload an attachment for Longevity Parts before resetting.'
+                    });
+                    return;
+                }
+
+                if(historySalesQuantityYEC == 0){
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Sales Quantity',
+                        text: 'Please enter sales quantity for YEC or PMI before resetting.'
+                    });
                     return;
                 }
 
@@ -1591,6 +1728,8 @@
                     {data: "from"},
                     {data: "to"},
                     {data: "variance"},
+                    {data: "yec_sales_qty"},
+                    {data: "pmi_sales_qty"},
                     {data: "uploaded_file"},
                     {data: "reset_by"},
                     {data: "approve_by"}
@@ -1650,9 +1789,9 @@
             });
 
             $(document).on('click', '.actionResetDeviceApproval', function(e){
-                let deviceId = $(this).attr('device-id');
+                deviceId = $(this).attr('device-id');
+                deviceCode = $(this).attr('device-code');
                 let approvalStatus = $(this).attr('approval-status');
-                let deviceCode = $(this).attr('device-code');
 
                 $('#txtResetDeviceApprovalId').val(deviceId);
                 $('#txtResetDeviceApprovalStatus').val(approvalStatus);
@@ -1679,14 +1818,10 @@
                 ResetDeviceApproval();
             });
 
-            // Classification change event
             $('#slctDeviceClassification').on('change', function () {
                 console.log('Device classification changed to');
                 toggleLongevityFile();
             });
-
-            // Initial check
-            toggleLongevityFile();
 
         });
     </script>

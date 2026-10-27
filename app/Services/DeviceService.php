@@ -29,7 +29,6 @@ class DeviceService
         })->values();
 
         return DataTables::of($deviceDetails)
-
             ->addColumn('action', function ($deviceDetail) use ($request) {
                 $btns = '<center>';
 
@@ -94,7 +93,6 @@ class DeviceService
             })
 
             ->addColumn('status', function ($deviceDetail) {
-
                 $status = $deviceDetail->status == 0
                     ? 'Active'
                     : 'Inactive';
@@ -111,7 +109,6 @@ class DeviceService
             })
 
             ->addColumn('total_actual_so', function ($device) {
-
                 return number_format(
                     (float) $device->total_actual_so,
                     0
@@ -119,7 +116,6 @@ class DeviceService
             })
 
             ->addColumn('percentage', function ($device) {
-
                 $toolLife = (float) $device->tool_life;
                 $totalActualSo = (float) $device->total_actual_so;
 
@@ -262,7 +258,6 @@ class DeviceService
 
     public function deviceCreateUpdateService( ?string $deviceId, array $data, ?string $userId): array {
         DB::beginTransaction();
-
         try {
             $exists = $this->deviceRepo->existsDevice([
                 'id'          => $deviceId,
@@ -350,7 +345,6 @@ class DeviceService
                 ->updateClassificationRepository();
 
             DB::commit();
-
             return [
                 'hasError' => 0,
                 'updatedCount' => $updatedCount,
@@ -359,7 +353,6 @@ class DeviceService
             DB::rollBack();
 
             report($e);
-
             return [
                 'hasError' => 1,
                 'exceptionError' => 'Unable to update classification.',
@@ -411,7 +404,6 @@ class DeviceService
                     $b['DeliveryUpdateId'];
             })
             ->values();
-
 
         $runningTotal = 0;
         $histories = $histories->map(function ($row) use (&$runningTotal) {
@@ -489,15 +481,32 @@ class DeviceService
 
     public function deviceResetToolLifeService( array $data, ?string $userId): array {
         DB::beginTransaction();
+
         try {
             $data['user_id'] = $userId;
-            $this->deviceRepo->deviceResetToolLifeRepository($data);
+
+            $result = $this->deviceRepo
+                ->deviceResetToolLifeRepository($data);
+
+            // Duplicate filename
+            if (($result['hasError'] ?? 0) == 2) {
+                DB::rollBack();
+
+                return [
+                    'hasError' => 2,
+                    'message' => $result['message'] ?? 'Filename already exists.'
+                ];
+            }
+
             DB::commit();
+
             return [
                 'hasError' => 0,
             ];
+
         } catch (\Exception $e) {
             DB::rollBack();
+
             return [
                 'hasError' => 1,
                 'exceptionError' => $e->getMessage(),
@@ -505,189 +514,212 @@ class DeviceService
         }
     }
 
-    public function getDeviceResetHistoryForDataTable($request, $rapidxUserId){
-        $deviceDetails = $this->deviceRepo->getAllDeviceResetData($request);
+    // public function deviceResetToolLifeService( array $data, ?string $userId): array {
+    //     DB::beginTransaction();
+    //     try {
+    //         $data['user_id'] = $userId;
+    //         $this->deviceRepo->deviceResetToolLifeRepository($data);
+    //         DB::commit();
+    //         return [
+    //             'hasError' => 0,
+    //         ];
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return [
+    //             'hasError' => 1,
+    //             'exceptionError' => $e->getMessage(),
+    //         ];
+    //     }
+    // }
 
-        return DataTables::of($deviceDetails)
-            ->addColumn('action', function ($deviceDetail) use ($request, $rapidxUserId) {
-                $btns = '<center>';
-                if ($deviceDetail->status == 0) {
-                    $btns .= '<button
-                                type="button"
-                                class="btn btn-dark btn-sm actionDeviceResetHistory"
-                                device-id="' . $deviceDetail->id . '"
-                                device-code="' . $deviceDetail->device_code . '"
-                                date-from="' . $deviceDetail->from . '"
-                                date-to="' . $deviceDetail->to . '"
-                                title="View Device History">
-                                <i class="fa fa-eye"></i>
+    public function getDeviceResetHistoryForDataTable($request, $rapidxUserId){
+        $deviceHistoryDetails = $this->deviceRepo->getAllDeviceResetData($request);
+
+        return DataTables::of($deviceHistoryDetails)
+        ->addColumn('action', function ($deviceHistoryDetail) use ($request, $rapidxUserId) {
+            $btns = '<center>';
+            if ($deviceHistoryDetail->status == 0) {
+                $btns .= '<button
+                            type="button"
+                            class="btn btn-dark btn-sm actionDeviceResetHistory"
+                            device-id="' . $deviceHistoryDetail->id . '"
+                            device-code="' . $deviceHistoryDetail->device_code . '"
+                            date-from="' . $deviceHistoryDetail->from . '"
+                            date-to="' . $deviceHistoryDetail->to . '"
+                            title="View Device History">
+                            <i class="fa fa-eye"></i>
+                        </button>&nbsp;';
+
+                $btns .= '<button type="button"
+                            class="btn btn-danger btn-sm actionDeviceHistoryChangeStatus"
+                            device-id="' . $deviceHistoryDetail->id . '"
+                            status="1" data-bs-toggle="modal"
+                            data-bs-target="#modalDeviceHistoryChangeStatus"
+                            title="Deactivate Device">
+                            <i class="fa-solid fa-ban"></i>
+                        </button><br>';
+
+                if($deviceHistoryDetail->approve_by == $rapidxUserId && $deviceHistoryDetail->approval_status == 0){
+                    $btns .= '<button type="button"
+                                class="btn btn-success btn-sm actionResetDeviceApproval mt-2"
+                                device-id="' . $deviceHistoryDetail->id . '"
+                                device-code="' . $deviceHistoryDetail->device_code . '"
+                                approval-status="1"
+                                title="Approve Device History">
+                                <i class="fa-solid fa-thumbs-up"></i>
                             </button>&nbsp;';
 
                     $btns .= '<button type="button"
-                                class="btn btn-danger btn-sm actionDeviceChangeStatus"
-                                device-id="' . $deviceDetail->id . '"
-                                status="1" data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceChangeStatus"
-                                title="Deactivate Device">
-                                <i class="fa-solid fa-ban"></i>
-                            </button><br>';
-
-                    if($deviceDetail->approve_by == $rapidxUserId && $deviceDetail->approval_status == 0){
-                        $btns .= '<button type="button"
-                                    class="btn btn-success btn-sm actionResetDeviceApproval mt-2"
-                                    device-id="' . $deviceDetail->id . '"
-                                    device-code="' . $deviceDetail->device_code . '"
-                                    approval-status="1"
-                                    title="Approve Device History">
-                                    <i class="fa-solid fa-thumbs-up"></i>
-                                </button>&nbsp;';
-
-                        $btns .= '<button type="button"
-                                    class="btn btn-danger btn-sm actionResetDeviceApproval mt-2"
-                                    device-id="' . $deviceDetail->id . '"
-                                    device-code="' . $deviceDetail->device_code . '"
-                                    approval-status="2"
-                                    title="Disapprove Device History">
-                                    <i class="fa-solid fa-thumbs-down"></i>
-                                </button>';
-                    }
-                } else {
-                    $btns .= '<button type="button"
-                                    class="btn btn-warning btn-sm actionDeviceChangeStatus"
-                                    device-id="' . $deviceDetail->id . '"
-                                    status="0"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalDeviceChangeStatus"
-                                    title="Activate Device">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
-                                </button>';
+                                class="btn btn-danger btn-sm actionResetDeviceApproval mt-2"
+                                device-id="' . $deviceHistoryDetail->id . '"
+                                device-code="' . $deviceHistoryDetail->device_code . '"
+                                approval-status="2"
+                                title="Disapprove Device History">
+                                <i class="fa-solid fa-thumbs-down"></i>
+                            </button>';
                 }
+            } else {
+                $btns .= '<button type="button"
+                                class="btn btn-warning btn-sm actionDeviceHistoryChangeStatus"
+                                device-id="' . $deviceHistoryDetail->id . '"
+                                status="0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDeviceHistoryChangeStatus"
+                                title="Activate Device">
+                                <i class="fa-solid fa-arrow-rotate-right"></i>
+                            </button>';
+            }
 
-                return $btns . '</center>';
-            })
-            ->addColumn('status', function ($deviceDetail) {
-                $status = $deviceDetail->status == 0 ? 'Active' : 'Inactive';
-                $badgeClass = $deviceDetail->status == 0 ? 'success' : 'danger';
-                return '<center><span class="badge bg-' . $badgeClass . '">' . $status . '</span></center>';
-            })
-            ->addColumn('from', function ($deviceDetail) {
-                return Carbon::parse($deviceDetail->from)->format('Y-m-d');
-            })
-            ->addColumn('to', function ($deviceDetail) {
-                return Carbon::parse($deviceDetail->to)->format('Y-m-d');
-            })
-            ->addColumn('uploaded_file', function ($deviceDetail) {
-                $result = '';
-                $attachments = $deviceDetail->uploaded_file ? $deviceDetail->uploaded_file : [];
-                $files = explode(' || ', $attachments);
-                foreach ($files as $file) {
-                    $url = route('download_file', ['filename' => $file]);
-                    $result .= "<a href='{$url}' title='{$file}' target='_blank'>{$file}</a><br>";
-                }
-                return $result;
-            })
-            ->addColumn('reset_by', function ($deviceDetail) {
-                return $deviceDetail->reset_by_rapidx_user_info ? $deviceDetail->reset_by_rapidx_user_info->name : '';
-            })
-            ->addColumn('approve_by', function ($deviceDetail) {
-                $approver = $deviceDetail->approve_by_rapidx_user_info
-                    ? $deviceDetail->approve_by_rapidx_user_info->name
-                    : null;
+            return $btns . '</center>';
+        })
+        ->addColumn('status', function ($deviceHistoryDetail) {
+            $status = $deviceHistoryDetail->status == 0 ? 'Active' : 'Inactive';
+            $badgeClass = $deviceHistoryDetail->status == 0 ? 'success' : 'danger';
+            return '<center><span class="badge bg-' . $badgeClass . '">' . $status . '</span></center>';
+        })
+        ->addColumn('from', function ($deviceHistoryDetail) {
+            return Carbon::parse($deviceHistoryDetail->from)->format('Y-m-d');
+        })
+        ->addColumn('to', function ($deviceHistoryDetail) {
+            return Carbon::parse($deviceHistoryDetail->to)->format('Y-m-d');
+        })
+        ->addColumn('uploaded_file', function ($deviceHistoryDetail) {
+            $result = '';
+            $attachments = $deviceHistoryDetail->uploaded_file ? $deviceHistoryDetail->uploaded_file : [];
+            $files = explode(' || ', $attachments);
+            foreach ($files as $file) {
+                $url = route('download_file', ['filename' => $file]);
+                $result .= "<a href='{$url}' title='{$file}' target='_blank'>{$file}</a><br>";
+            }
+            return $result;
+        })
+        ->addColumn('reset_by', function ($deviceHistoryDetail) {
+            $result = '';
 
-                $date = $deviceDetail->approved_by_date_time
-                    ? \Carbon\Carbon::parse($deviceDetail->approved_by_date_time)->format('M d, Y h:i A')
-                    : null;
+            $result .= $deviceHistoryDetail->reset_by_rapidx_user_info ? $deviceHistoryDetail->reset_by_rapidx_user_info->name : '' ;
+            $result .= '<br>';
+            $result .= $deviceHistoryDetail->created_at ? \Carbon\Carbon::parse($deviceHistoryDetail->created_at)->format('Y-m-d') : '';
+            return $result;
+        })
+        ->addColumn('approve_by', function ($deviceHistoryDetail) {
+            $approver = $deviceHistoryDetail->approve_by_rapidx_user_info
+                ? $deviceHistoryDetail->approve_by_rapidx_user_info->name
+                : null;
 
-                $remark = $deviceDetail->approved_by_remark ?? null;
+            $date = $deviceHistoryDetail->approved_by_date_time
+                ? \Carbon\Carbon::parse($deviceHistoryDetail->approved_by_date_time)->format('M d, Y h:i A')
+                : null;
 
-                switch ($deviceDetail->approval_status) {
-                    case 0:
-                        return '
-                            <div>
-                                <span class="badge bg-warning text-dark">
-                                    <i class="fas fa-clock"></i> Pending
-                                </span>
+            $remark = $deviceHistoryDetail->approved_by_remark ?? null;
 
-                                ' . ($approver ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>By:</strong> ' . e($approver) . '
-                                    </small>
-                                ' : '') . '
-                                ' . ($date ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Date:</strong> ' . e($date) . '
-                                    </small>
-                                ' : '') . '
+            switch ($deviceHistoryDetail->approval_status) {
+                case 0:
+                    return '
+                        <div>
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-clock"></i> Pending
+                            </span>
 
-                                ' . ($remark ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Remark:</strong> ' . e($remark) . '
-                                    </small>
-                                ' : '') . '
-                            </div>
-                        ';
+                            ' . ($approver ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>By:</strong> ' . e($approver) . '
+                                </small>
+                            ' : '') . '
+                            ' . ($date ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Date:</strong> ' . e($date) . '
+                                </small>
+                            ' : '') . '
 
-                    case 1:
-                        return '
-                            <div>
-                                <span class="badge bg-success">
-                                    <i class="fas fa-check-circle"></i> Approved
-                                </span>
+                            ' . ($remark ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Remark:</strong> ' . e($remark) . '
+                                </small>
+                            ' : '') . '
+                        </div>
+                    ';
 
-                                ' . ($approver ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>By:</strong> ' . e($approver) . '
-                                    </small>
-                                ' : '') . '
+                case 1:
+                    return '
+                        <div>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> Approved
+                            </span>
 
-                                ' . ($date ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Date:</strong> ' . e($date) . '
-                                    </small>
-                                ' : '') . '
+                            ' . ($approver ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>By:</strong> ' . e($approver) . '
+                                </small>
+                            ' : '') . '
 
-                                ' . ($remark ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Remark:</strong> ' . e($remark) . '
-                                    </small>
-                                ' : '') . '
-                            </div>
-                        ';
+                            ' . ($date ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Date:</strong> ' . e($date) . '
+                                </small>
+                            ' : '') . '
 
-                    case 2:
-                        return '
-                            <div>
-                                <span class="badge bg-danger">
-                                    <i class="fas fa-times-circle"></i> Disapproved
-                                </span>
+                            ' . ($remark ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Remark:</strong> ' . e($remark) . '
+                                </small>
+                            ' : '') . '
+                        </div>
+                    ';
 
-                                ' . ($approver ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>By:</strong> ' . e($approver) . '
-                                    </small>
-                                ' : '') . '
+                case 2:
+                    return '
+                        <div>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle"></i> Disapproved
+                            </span>
 
-                                ' . ($date ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Date:</strong> ' . e($date) . '
-                                    </small>
-                                ' : '') . '
+                            ' . ($approver ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>By:</strong> ' . e($approver) . '
+                                </small>
+                            ' : '') . '
 
-                                ' . ($remark ? '
-                                    <small class="d-block text-muted mt-1">
-                                        <strong>Remark:</strong> ' . e($remark) . '
-                                    </small>
-                                ' : '') . '
-                            </div>
-                        ';
+                            ' . ($date ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Date:</strong> ' . e($date) . '
+                                </small>
+                            ' : '') . '
 
-                    default:
-                        return '';
-                }
-            })
+                            ' . ($remark ? '
+                                <small class="d-block text-muted mt-1">
+                                    <strong>Remark:</strong> ' . e($remark) . '
+                                </small>
+                            ' : '') . '
+                        </div>
+                    ';
 
-            ->rawColumns(['action', 'status', 'from', 'to', 'uploaded_file', 'reset_by', 'approve_by'])
-            ->make(true);
+                default:
+                    return '';
+            }
+        })
+
+        ->rawColumns(['action', 'status', 'from', 'to', 'uploaded_file', 'reset_by', 'approve_by'])
+        ->make(true);
     }
 
     public function downloadFileService(string $filename){
@@ -819,7 +851,6 @@ class DeviceService
         | But DataTable displays newest record first.
         |--------------------------------------------------------------------------
         */
-
         $deviceHistoryDetails = $deviceHistoryDetails
             ->sort(function ($a, $b) {
                 $dateCompare = strtotime(

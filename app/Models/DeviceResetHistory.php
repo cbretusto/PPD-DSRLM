@@ -18,6 +18,8 @@ class DeviceResetHistory extends Model
         'from',
         'to',
         'variance',
+        'yec_sales_qty',
+        'pmi_sales_qty',
         'uploaded_file',
         'reset_by',
         'approve_by',

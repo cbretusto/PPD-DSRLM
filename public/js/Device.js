@@ -59,8 +59,17 @@ function GetDeviceInfoByIdToEdit(deviceId){
                 $("#txtToolLife").val(requestDeviceInfo[0].tool_life);
                 $("#txtYecSalesQty").val(requestDeviceInfo[0].yec_sales_qty);
                 $("#txtPmiSalesQty").val(requestDeviceInfo[0].pmi_sales_qty);
+                $("#textLongevityUpload").val(requestDeviceInfo[0].attachment);
                 $("#slctDeviceClassification").val(requestDeviceInfo[0].classification).trigger('change');
                 $(`input[name="process_type"][value="${requestDeviceInfo[0].process_type}"]`).prop('checked', true);
+
+                if(requestDeviceInfo[0].attachment){
+                    $("#divLongevityFileInput").addClass('d-none');
+                    $("#divLongevityTextInput").removeClass('d-none');
+                }else{
+                    $("#divLongevityTextInput").addClass('d-none');
+                    $("#divLongevityFileInput").removeClass('d-none');
+                }
             }
         },
         errorCallback: () => {
@@ -213,29 +222,39 @@ function DeviceToolLifeReset() {
         processData: false,
         contentType: false,
         dataType: "json",
+
         beforeSendCallback: function(xhr) {
             $("#iBtnDeviceResetIcon").addClass('spinner-border spinner-border-sm');
             $("#btnDeviceReset").addClass('disabled');
             $("#iBtnDeviceResetIcon").removeClass('fa fa-check');
         },
+
         successCallback: (response) => {
             if (response['validationHasError'] == 1) {
                 toastr.error('Saving failed!');
-            }else if(response['hasError'] == 0) {
+
+            } else if (response['hasError'] == 0) {
                 $('#deviceResetModal').modal('hide');
                 toastr.success('Successfully saved!');
                 dataTableDeviceResetHistory.draw();
-            }else{
-                toastr.error('Device already exist!');
-                $('#deviceResetModal').modal('hide');
+
+            } else if (response['hasError'] == 2) {
+                toastr.error(
+                    response['message'] || 'File name already exists!'
+                );
             }
+
             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
             $("#btnDeviceReset").removeClass('disabled');
             $("#iBtnDeviceResetIcon").addClass('fa fa-check');
         },
+
         errorCallback: (xhr) => {
             toastr.error('Saving device failed!');
-            handleValidatorErrors(xhr.responseJSON.errors);
+
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                handleValidatorErrors(xhr.responseJSON.errors);
+            }
 
             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
             $("#btnDeviceReset").removeClass('disabled');
@@ -245,6 +264,47 @@ function DeviceToolLifeReset() {
 
     ajaxRequest(ajaxDeviceResetToolLife);
 }
+
+// function DeviceToolLifeReset() {
+//     const form = $('#deviceResetForm')[0];
+//     const formData = new FormData(form);
+
+//     const ajaxDeviceResetToolLife = {
+//         url: "device_reset_tool_life",
+//         method: "POST",
+//         data: formData,
+//         processData: false,
+//         contentType: false,
+//         dataType: "json",
+//         beforeSendCallback: function(xhr) {
+//             $("#iBtnDeviceResetIcon").addClass('spinner-border spinner-border-sm');
+//             $("#btnDeviceReset").addClass('disabled');
+//             $("#iBtnDeviceResetIcon").removeClass('fa fa-check');
+//         },
+//         successCallback: (response) => {
+//             if (response['validationHasError'] == 1) {
+//                 toastr.error('Saving failed!');
+//             }else if(response['hasError'] == 0) {
+//                 $('#deviceResetModal').modal('hide');
+//                 toastr.success('Successfully saved!');
+//                 dataTableDeviceResetHistory.draw();
+//             }
+//             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
+//             $("#btnDeviceReset").removeClass('disabled');
+//             $("#iBtnDeviceResetIcon").addClass('fa fa-check');
+//         },
+//         errorCallback: (xhr) => {
+//             toastr.error('Saving device failed!');
+//             handleValidatorErrors(xhr.responseJSON.errors);
+
+//             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
+//             $("#btnDeviceReset").removeClass('disabled');
+//             $("#iBtnDeviceResetIcon").addClass('fa fa-check');
+//         }
+//     };
+
+//     ajaxRequest(ajaxDeviceResetToolLife);
+// }
 
 const UserManagementGetApproveBy = (element) => {
     let result = '';
@@ -271,20 +331,22 @@ const UserManagementGetApproveBy = (element) => {
     ajaxRequest(ajaxGetSystemOneDepartment);
 }
 
-const RemarkGet = (element) => {
+const GetRemark = (element, remarkType) => {
     let result = '';
     const ajaxGetRemarks = {
         url: 'get_ppd_dsrlm_remark',
         method: 'GET',
         successCallback: (response) => {
             let remarks = response['remark']
+            console.log('JS Remark Type:', remarkType);
             if(remarks.length > 0){
                 result += '<option value="" disabled selected>-- Select Remark --</option>';
                 for(let index = 0; index < remarks.length; index++){
-                    result += '<option value="' + remarks[index].remark + '">' + remarks[index].remark + '</option>';
+                    if(remarks[index].remark_type == remarkType){
+                        result += '<option value="' + remarks[index].remark + '">' + remarks[index].remark + '</option>';
+                    }
                 }
-            }
-            else{
+            }else{
                 result += '<option value="" disabled>Not found</option>';
             }
             element.html(result);
@@ -369,12 +431,12 @@ function toggleLongevityFile() {
     );
 
     // Enable/disable file upload
-    $('#fileLongevity')
+    $('#fileLongevityUpload')
         .prop('disabled', !isWaitingForLongevity)
         .prop('required', isWaitingForLongevity);
 
     // Clear file kapag ibang classification ang pinili
     if (!isWaitingForLongevity) {
-        $('#fileLongevity').val('');
+        $('#fileLongevityUpload').val('');
     }
 }

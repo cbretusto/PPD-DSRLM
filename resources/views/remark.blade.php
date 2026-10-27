@@ -231,7 +231,7 @@
                 "responsive": true,
                 "order": [[1,'desc'],[3, "asc"]],
                 "language": {
-                    "info": "Showing _START_ to _END_ of _TOTAL_ Markup Record",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ Remark Record",
                     "lengthMenu": "Show _MENU_ Remark Record",
                 },
                 "ajax" : {
