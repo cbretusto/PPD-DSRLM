@@ -21,6 +21,30 @@ class DeviceService
         $userLevel = (int) $request->input('user_level', 0);
         $canManageDevice = ($userClassification === 3 || $userLevel === 2);
 
+        // Additional logic: percentage counts only
+        $percentageCounts = [
+            'count_70_79'  => 0,
+            'count_80_99'  => 0,
+            'count_100_up' => 0,
+        ];
+
+        foreach ($deviceDetails as $device) {
+            $toolLife = (float) $device->tool_life;
+            $totalActualSo = (float) $device->total_actual_so;
+
+            $percentage = $toolLife > 0
+                ? ($totalActualSo / $toolLife) * 100
+                : 0;
+
+            if ($percentage >= 100) {
+                $percentageCounts['count_100_up']++;
+            } elseif ($percentage >= 80) {
+                $percentageCounts['count_80_99']++;
+            } elseif ($percentage >= 70) {
+                $percentageCounts['count_70_79']++;
+            }
+        }
+
         // Sort by actual percentage DESC
         $deviceDetails = $deviceDetails->sortByDesc(function ($device) {
             $toolLife = (float) $device->tool_life;
@@ -32,69 +56,6 @@ class DeviceService
         })->values();
 
         return DataTables::of($deviceDetails)
-            // ->addColumn('action', function ($deviceDetail) use ($request) {
-            //     $btns = '<center>';
-
-            //     if ($deviceDetail->status == 0) {
-            //         $btns .= '<button
-            //                     type="button"
-            //                     class="btn btn-dark btn-sm actionUpdateDevice"
-            //                     device-id="' . $deviceDetail->id . '"
-            //                     data-bs-toggle="modal"
-            //                     data-bs-target="#modalDeviceCreateUpdate"
-            //                     title="Edit Device Details">
-            //                     <i class="fa fa-edit"></i>
-            //                 </button>&nbsp;';
-
-            //         $btns .= '<button
-            //                     type="button"
-            //                     class="btn btn-info btn-sm actionDeviceHistory"
-            //                     device-id="' . $deviceDetail->id . '"
-            //                     device-code="' . $deviceDetail->device_code . '"
-            //                     device-name="' . $deviceDetail->device_name . '"
-            //                     tool-life="' . $deviceDetail->tool_life . '"
-            //                     pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
-            //                     yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
-            //                     device-total_qty="' . $deviceDetail->total_qty . '"
-            //                     device-classification="' . $deviceDetail->classification . '"
-            //                     device-attachment="' . $deviceDetail->attachment . '"
-            //                     dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
-            //                     dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
-            //                     dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
-            //                     dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
-            //                     data-bs-toggle="modal"
-            //                     data-bs-target="#modalDeviceHistory"
-            //                     title="View Device History">
-            //                     <i class="fa fa-history"></i>
-            //                 </button>&nbsp;';
-
-            //         $btns .= '<button
-            //                     type="button"
-            //                     class="btn btn-danger btn-sm actionDeviceChangeStatus"
-            //                     device-id="' . $deviceDetail->id . '"
-            //                     status="1"
-            //                     data-bs-toggle="modal"
-            //                     data-bs-target="#modalDeviceChangeStatus"
-            //                     title="Deactivate Device">
-            //                     <i class="fa-solid fa-ban"></i>
-            //                 </button>';
-
-            //     } else {
-            //         $btns .= '<button
-            //                     type="button"
-            //                     class="btn btn-warning btn-sm actionDeviceChangeStatus"
-            //                     device-id="' . $deviceDetail->id . '"
-            //                     status="0"
-            //                     data-bs-toggle="modal"
-            //                     data-bs-target="#modalDeviceChangeStatus"
-            //                     title="Activate Device">
-            //                     <i class="fa-solid fa-arrow-rotate-right"></i>
-            //                 </button>';
-            //     }
-
-            //     return $btns . '</center>';
-            // })
-
             ->addColumn('action', function ($deviceDetail) use ($canManageDevice) {
                 $btns = '<center>';
 
@@ -256,7 +217,7 @@ class DeviceService
                 'percentage',
                 'attachment'
             ])
-
+            ->with('percentage_counts', $percentageCounts)
             ->make(true);
     }
 
