@@ -697,8 +697,9 @@ class DeviceRepository implements DeviceInterface
 
     public function changeDeviceStatusRepository(array $data){
         return Device::where('id', $data['device_id'])->update([
-            'status'     => $data['status'],
-            'updated_at' => now(),
+            'status'                => $data['status'],
+            'remark_status'         => $data['remark_status'],
+            'updated_at'            => now(),
         ]);
     }
 

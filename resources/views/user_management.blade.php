@@ -37,6 +37,16 @@
             background-color: #343a40;
             color: white;
         }
+
+        .select2-container .select2-selection--single {
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .select2-container .select2-selection__arrow {
+            height: 30px !important;
+        }
     </style>
 
     <div class="content-wrapper layout-fixed">
@@ -78,6 +88,7 @@
                                                 <th>Email</th>
                                                 <th>Department</th>
                                                 <th>Position</th>
+                                                <th>User Level</th>
                                             </tr>
                                         </thead>
                                     </table>
@@ -150,7 +161,7 @@
                         <input type="text" class="input_hidden" id="textUserId" name="user_id" readonly>
                         <div class="row">
                             <!-- Name -->
-                            <div class="col-md-12 mb-4">
+                            <div class="col-md-6 mb-4">
                                 <label for="slctEmployeeNameWID" class="form-label fw-semibold">Name:</label>
 
                                 <div class="input-group input-group-lg">
@@ -158,7 +169,26 @@
                                         <i class="fas fa-user text-dark"></i>
                                     </span>
 
-                                    <select class="form-select select2bs5 get-rapidx-user bg-light border-start-0" id="slctEmployeeNameWID" name="name_w_id">
+                                    <select class="form-select select2bs5 get-rapidx-user bg-light border-start-0" id="slctEmployeeNameWID" name="name_w_id" required>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- User Level -->
+                            <div class="col-md-6 mb-4">
+                                <label for="slctUserLevel" class="form-label fw-semibold">
+                                    User Level:
+                                </label>
+
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-user-shield text-dark"></i>
+                                    </span>
+
+                                    <select class="form-select bg-light border-start-0" id="slctUserLevel" name="user_level">
+                                        <option value="" selected disabled>Select user level</option>
+                                        <option value="1">User</option>
+                                        <option value="2">Admin</option>
                                     </select>
                                 </div>
                             </div>
@@ -362,6 +392,7 @@
                                         <option value="" selected disabled>Select Classification</option>
                                         <option value="1">Approve By</option>
                                         <option value="2">Reset By</option>
+                                        <option value="3">Registered By</option>
                                     </select>
                                 </div>
                             </div>
@@ -528,6 +559,31 @@
                     { "data" : "user_management_rapidx_user_info.email"},
                     { "data" : "user_management_systemone_department_info.Department"},
                     { "data" : "user_management_systemone_position_info.Position"},
+                    { "data" : "user_level",
+                        "defaultContent": 'N/A',
+                        "name": 'user_level',
+                        "orderable": true,
+                        "searchable": true,
+                        "render": function (data, type, row) {
+                            let level
+                            let badgeClass
+                            switch (row.user_level) {
+                                case 1:
+                                    level = 'User';
+                                    badgeClass = 'secondary';
+                                    break;
+                                case 2:
+                                    level = 'Admin';
+                                    badgeClass = 'dark';
+                                    break;
+                                default:
+                                    level = 'Unknown';
+                                    badgeClass = 'danger';
+                                    break;
+                            }
+                            return '<center><span class="badge bg-' + badgeClass + '">' + level + '</span></center>';
+                        },
+                    },
                 ],
             });
 
@@ -658,6 +714,8 @@
                                     return "Approve By";
                                 case '2':
                                     return "Reset By";
+                                case '3':
+                                    return "Registered By";
                                 default:
                                     return "Unknown";
                             }

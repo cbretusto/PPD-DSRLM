@@ -16,7 +16,7 @@ class UserManagement extends Model{
         'position',
         'email',
         'classification',
-        'invoice_department',
+        'user_level',
         'updated_at'
     ];
 

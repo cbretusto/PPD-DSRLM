@@ -19,7 +19,8 @@ class CreateUserManagementsTable extends Migration
             $table->string('department')->nullable();
             $table->string('position')->nullable();
             $table->string('email')->nullable();
-            $table->string('classification')->nullable();
+            $table->unsignedTinyInteger('user_level')->nullable()->comment('1-User, 2-Admin');
+            $table->string('classification')->default(0)->comment('0-N/A, 1-Approve By, 2-Reset By, 3-Registered By');
             $table->unsignedTinyInteger('status')->default(0)->comment('0-active, 1-deactivate');
             $table->unsignedTinyInteger('logdel')->default(0)->comment('0-Show, 1-Hide');
             $table->timestamps();

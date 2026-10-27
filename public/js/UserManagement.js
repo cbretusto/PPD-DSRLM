@@ -129,6 +129,7 @@ function UserManagementGetUserInfoByIdToEdit(userId){
                 $("#slctEmployeeNameWID").val(requestUserInfo[0].rapidx_user_id).trigger('change');
                 $("#slctEmployeeDepartment").val(requestUserInfo[0].department).trigger('change');
                 $("#slctEmployeePosition").val(requestUserInfo[0].position).trigger('change');
+                $("#slctUserLevel").val(requestUserInfo[0].user_level).trigger('change');
             }
         },
         errorCallback: () => {

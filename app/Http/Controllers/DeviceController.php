@@ -16,6 +16,13 @@ class DeviceController extends Controller
     }
 
     public function viewDevice(Request $request){
+        session_start();
+        $userClassification = $_SESSION['ppd_dsrlm_classification'] ?? null;
+        $userLevel = $_SESSION['ppd_dsrlm_user_level'] ?? null;
+        $request->merge([
+            'user_classification' => $userClassification,
+            'user_level' => $userLevel,
+        ]);
         return $this->deviceService->getDeviceForDataTable($request);
     }
 
@@ -101,6 +108,11 @@ class DeviceController extends Controller
     public function viewDeviceResetHistory(Request $request){
         session_start();
         $rapidxUserId = $_SESSION['rapidx_user_id'];
+        $userLevel = $_SESSION['ppd_dsrlm_user_level'] ?? null;
+        $request->merge([
+            'user_level' => $userLevel,
+        ]);
+
         return $this->deviceService->getDeviceResetHistoryForDataTable($request, $rapidxUserId);
     }
 

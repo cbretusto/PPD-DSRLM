@@ -74,7 +74,7 @@ class UserManagementService{
 
     public function createOrUpdateUserService(?string $userId, array $data): array{
         return DB::transaction(function () use ($userId, $data) {
-            if ($this->userInterface->existsUserRepository(['rapidx_user_id' => $data['name_w_id'], 'logdel' => 0], $userId)) {
+            if ($this->userInterface->existsUserRepository(['rapidx_user_id' => $data['name_w_id'], 'user_level' => $data['user_level'], 'logdel' => 0], $userId)) {
                 return ['hasError' => 1, 'message' => 'User already exists'];
             }
 

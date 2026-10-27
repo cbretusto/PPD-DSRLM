@@ -17,6 +17,9 @@ class DeviceService
 
     public function getDeviceForDataTable($request){
         $deviceDetails = $this->deviceRepo->getAllDeviceData($request->processType);
+        $userClassification = (int) $request->input('user_classification', 0);
+        $userLevel = (int) $request->input('user_level', 0);
+        $canManageDevice = ($userClassification === 3 || $userLevel === 2);
 
         // Sort by actual percentage DESC
         $deviceDetails = $deviceDetails->sortByDesc(function ($device) {
@@ -29,69 +32,137 @@ class DeviceService
         })->values();
 
         return DataTables::of($deviceDetails)
-            ->addColumn('action', function ($deviceDetail) use ($request) {
+            // ->addColumn('action', function ($deviceDetail) use ($request) {
+            //     $btns = '<center>';
+
+            //     if ($deviceDetail->status == 0) {
+            //         $btns .= '<button
+            //                     type="button"
+            //                     class="btn btn-dark btn-sm actionUpdateDevice"
+            //                     device-id="' . $deviceDetail->id . '"
+            //                     data-bs-toggle="modal"
+            //                     data-bs-target="#modalDeviceCreateUpdate"
+            //                     title="Edit Device Details">
+            //                     <i class="fa fa-edit"></i>
+            //                 </button>&nbsp;';
+
+            //         $btns .= '<button
+            //                     type="button"
+            //                     class="btn btn-info btn-sm actionDeviceHistory"
+            //                     device-id="' . $deviceDetail->id . '"
+            //                     device-code="' . $deviceDetail->device_code . '"
+            //                     device-name="' . $deviceDetail->device_name . '"
+            //                     tool-life="' . $deviceDetail->tool_life . '"
+            //                     pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
+            //                     yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
+            //                     device-total_qty="' . $deviceDetail->total_qty . '"
+            //                     device-classification="' . $deviceDetail->classification . '"
+            //                     device-attachment="' . $deviceDetail->attachment . '"
+            //                     dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
+            //                     dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
+            //                     dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
+            //                     dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
+            //                     data-bs-toggle="modal"
+            //                     data-bs-target="#modalDeviceHistory"
+            //                     title="View Device History">
+            //                     <i class="fa fa-history"></i>
+            //                 </button>&nbsp;';
+
+            //         $btns .= '<button
+            //                     type="button"
+            //                     class="btn btn-danger btn-sm actionDeviceChangeStatus"
+            //                     device-id="' . $deviceDetail->id . '"
+            //                     status="1"
+            //                     data-bs-toggle="modal"
+            //                     data-bs-target="#modalDeviceChangeStatus"
+            //                     title="Deactivate Device">
+            //                     <i class="fa-solid fa-ban"></i>
+            //                 </button>';
+
+            //     } else {
+            //         $btns .= '<button
+            //                     type="button"
+            //                     class="btn btn-warning btn-sm actionDeviceChangeStatus"
+            //                     device-id="' . $deviceDetail->id . '"
+            //                     status="0"
+            //                     data-bs-toggle="modal"
+            //                     data-bs-target="#modalDeviceChangeStatus"
+            //                     title="Activate Device">
+            //                     <i class="fa-solid fa-arrow-rotate-right"></i>
+            //                 </button>';
+            //     }
+
+            //     return $btns . '</center>';
+            // })
+
+            ->addColumn('action', function ($deviceDetail) use ($canManageDevice) {
                 $btns = '<center>';
 
                 if ($deviceDetail->status == 0) {
-                    $btns .= '<button
-                                type="button"
-                                class="btn btn-dark btn-sm actionUpdateDevice"
-                                device-id="' . $deviceDetail->id . '"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceCreateUpdate"
-                                title="Edit Device Details">
-                                <i class="fa fa-edit"></i>
-                            </button>&nbsp;';
+                    if ($canManageDevice) {
+                        $btns .= '<button
+                            type="button"
+                            class="btn btn-dark btn-sm actionUpdateDevice"
+                            device-id="' . $deviceDetail->id . '"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalDeviceCreateUpdate"
+                            title="Edit Device Details">
+                            <i class="fa fa-edit"></i>
+                        </button>&nbsp;';
+                    }
 
+                    // View Device History: visible to all
                     $btns .= '<button
-                                type="button"
-                                class="btn btn-info btn-sm actionDeviceHistory"
-                                device-id="' . $deviceDetail->id . '"
-                                device-code="' . $deviceDetail->device_code . '"
-                                device-name="' . $deviceDetail->device_name . '"
-                                tool-life="' . $deviceDetail->tool_life . '"
-                                pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
-                                yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
-                                device-total_qty="' . $deviceDetail->total_qty . '"
-                                device-classification="' . $deviceDetail->classification . '"
-                                device-attachment="' . $deviceDetail->attachment . '"
-                                dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
-                                dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
-                                dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
-                                dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceHistory"
-                                title="View Device History">
-                                <i class="fa fa-history"></i>
-                            </button>&nbsp;';
+                        type="button"
+                        class="btn btn-info btn-sm actionDeviceHistory"
+                        device-id="' . $deviceDetail->id . '"
+                        device-code="' . $deviceDetail->device_code . '"
+                        device-name="' . $deviceDetail->device_name . '"
+                        tool-life="' . $deviceDetail->tool_life . '"
+                        pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
+                        yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
+                        device-total_qty="' . $deviceDetail->total_qty . '"
+                        device-classification="' . $deviceDetail->classification . '"
+                        device-attachment="' . $deviceDetail->attachment . '"
+                        dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
+                        dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
+                        dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
+                        dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalDeviceHistory"
+                        title="View Device History">
+                        <i class="fa fa-history"></i>
+                    </button>&nbsp;';
 
-                    $btns .= '<button
-                                type="button"
-                                class="btn btn-danger btn-sm actionDeviceChangeStatus"
-                                device-id="' . $deviceDetail->id . '"
-                                status="1"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceChangeStatus"
-                                title="Deactivate Device">
-                                <i class="fa-solid fa-ban"></i>
-                            </button>';
-
+                    if ($canManageDevice) {
+                        $btns .= '<button
+                            type="button"
+                            class="btn btn-danger btn-sm actionDeviceChangeStatus"
+                            device-id="' . $deviceDetail->id . '"
+                            status="1"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalDeviceChangeStatus"
+                            title="Deactivate Device">
+                            <i class="fa-solid fa-ban"></i>
+                        </button>';
+                    }
                 } else {
-                    $btns .= '<button
-                                type="button"
-                                class="btn btn-warning btn-sm actionDeviceChangeStatus"
-                                device-id="' . $deviceDetail->id . '"
-                                status="0"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceChangeStatus"
-                                title="Activate Device">
-                                <i class="fa-solid fa-arrow-rotate-right"></i>
-                            </button>';
+                    if ($canManageDevice) {
+                        $btns .= '<button
+                            type="button"
+                            class="btn btn-warning btn-sm actionDeviceChangeStatus"
+                            device-id="' . $deviceDetail->id . '"
+                            status="0"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalDeviceChangeStatus"
+                            title="Activate Device">
+                            <i class="fa-solid fa-arrow-rotate-right"></i>
+                        </button>';
+                    }
                 }
 
-                return $btns . '</center>';
+                return $btns;
             })
-
             ->addColumn('status', function ($deviceDetail) {
                 $status = $deviceDetail->status == 0
                     ? 'Active'
@@ -104,7 +175,8 @@ class DeviceService
                 return '<center>
                             <span class="badge bg-' . $badgeClass . '">
                                 ' . $status . '
-                            </span>
+                            </span><br>
+                            ' . $deviceDetail->remark_status . '
                         </center>';
             })
 
@@ -126,22 +198,15 @@ class DeviceService
 
                 // Color based on actual percentage
                 if ($percentage >= 100) {
-
                     $icon = 'fa-exclamation-triangle';
                     $color = 'red';
-
                 } elseif ($percentage >= 80) {
-
                     $icon = 'fa-exclamation-triangle';
                     $color = 'orange';
-
                 } elseif ($percentage >= 70) {
-
                     $icon = 'fa-exclamation-triangle';
                     $color = 'blue';
-
                 } else {
-
                     $icon = 'fa-check-circle';
                     $color = 'gray';
                 }
@@ -260,10 +325,11 @@ class DeviceService
         DB::beginTransaction();
         try {
             $exists = $this->deviceRepo->existsDevice([
-                'id'          => $deviceId,
-                'device_code' => $data['device_code'],
-                'tool_life'   => $data['tool_life'],
-                'logdel'      => 0,
+                'id'                => $deviceId,
+                'device_code'       => $data['device_code'],
+                'tool_life'         => $data['tool_life'],
+                'classification'    => $data['device_classification'],
+                'logdel'            => 0,
             ]);
 
             $newData = $this->deviceRepo->newDevice([
@@ -325,8 +391,9 @@ class DeviceService
 
         try {
             $this->deviceRepo->changeDeviceStatusRepository([
-                'device_id' => $data['device_id'],
-                'status'     => $data['status'],
+                'device_id'     => $data['device_id'],
+                'status'        => $data['status'],
+                'remark_status' => $data['device_remark_status'],
             ]);
 
             DB::commit();
@@ -534,9 +601,11 @@ class DeviceService
 
     public function getDeviceResetHistoryForDataTable($request, $rapidxUserId){
         $deviceHistoryDetails = $this->deviceRepo->getAllDeviceResetData($request);
+        $userLevel = (int) $request->input('user_level', 0);
+        $canManageDevice = ($userLevel === 2);
 
         return DataTables::of($deviceHistoryDetails)
-        ->addColumn('action', function ($deviceHistoryDetail) use ($request, $rapidxUserId) {
+        ->addColumn('action', function ($deviceHistoryDetail) use ($request, $rapidxUserId, $canManageDevice) {
             $btns = '<center>';
             if ($deviceHistoryDetail->status == 0) {
                 $btns .= '<button
@@ -550,7 +619,8 @@ class DeviceService
                             <i class="fa fa-eye"></i>
                         </button>&nbsp;';
 
-                $btns .= '<button type="button"
+                if ($canManageDevice) {
+                    $btns .= '<button type="button"
                             class="btn btn-danger btn-sm actionDeviceHistoryChangeStatus"
                             device-id="' . $deviceHistoryDetail->id . '"
                             status="1" data-bs-toggle="modal"
@@ -558,6 +628,7 @@ class DeviceService
                             title="Deactivate Device">
                             <i class="fa-solid fa-ban"></i>
                         </button><br>';
+                }
 
                 if($deviceHistoryDetail->approve_by == $rapidxUserId && $deviceHistoryDetail->approval_status == 0){
                     $btns .= '<button type="button"
@@ -579,15 +650,17 @@ class DeviceService
                             </button>';
                 }
             } else {
-                $btns .= '<button type="button"
-                                class="btn btn-warning btn-sm actionDeviceHistoryChangeStatus"
-                                device-id="' . $deviceHistoryDetail->id . '"
-                                status="0"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalDeviceHistoryChangeStatus"
-                                title="Activate Device">
-                                <i class="fa-solid fa-arrow-rotate-right"></i>
-                            </button>';
+                if ($canManageDevice) {
+                    $btns .= '<button type="button"
+                                    class="btn btn-warning btn-sm actionDeviceHistoryChangeStatus"
+                                    device-id="' . $deviceHistoryDetail->id . '"
+                                    status="0"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalDeviceHistoryChangeStatus"
+                                    title="Activate Device">
+                                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                                </button>';
+                }
             }
 
             return $btns . '</center>';

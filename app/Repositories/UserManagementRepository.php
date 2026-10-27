@@ -19,6 +19,7 @@ class UserManagementRepository implements UserManagementInterface{
     public function getAllUsersDataRepository(){
         return UserManagement::with([
             'user_management_rapidx_user_info.rapidx_systemone_employee_info',
+            'user_management_rapidx_user_info.rapidx_systemone_subcon_info',
             'user_management_systemone_department_info',
             'user_management_systemone_position_info'
         ])
@@ -29,7 +30,8 @@ class UserManagementRepository implements UserManagementInterface{
 
     public function getRapidxUserActiveInSystemOneRepository(){
         return RapidxUser::with([
-            'rapidx_systemone_employee_info'
+            'rapidx_systemone_employee_info',
+            'rapidx_systemone_subcon_info'
         ])
         ->where('user_stat', 1)
         ->orderBy('name', 'ASC')
@@ -87,6 +89,7 @@ class UserManagementRepository implements UserManagementInterface{
     private function mapUserData(array $data): array{
         return [
             'rapidx_user_id'        => $data['name_w_id'],
+            'user_level'            => $data['user_level'],
             'department'            => $data['department'],
             'position'              => $data['position'],
             'email'                  => $data['email'],

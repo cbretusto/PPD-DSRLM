@@ -27,8 +27,9 @@ class DeviceRequest extends FormRequest
 
         if ($action === 'changeDeviceStatus') {
             return [
-                'device_id' => 'required',
-                'status'  => 'required|in:0,1',
+                'device_id'             => 'required',
+                'device_remark_status'  => 'required',
+                'status'                => 'required|in:0,1',
             ];
         }
 
@@ -72,9 +73,10 @@ class DeviceRequest extends FormRequest
 
         if ($action === 'changeDeviceStatus') {
             return [
-                'device_id.required' => 'Device ID is required.',
-                'status.required'  => 'Status is required.',
-                'status.in'        => 'Invalid status value.',
+                'device_id.required'            => 'Device ID is required.',
+                'device_remark_status.required' => 'Device remark status is required.',
+                'status.required'               => 'Status is required.',
+                'status.in'                     => 'Invalid status value.',
             ];
         }
 

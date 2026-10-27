@@ -20,8 +20,4 @@ class RapidxUser extends Model{
     public function rapidx_systemone_subcon_info(){
         return $this->hasOne(SystemOneSubcon::class, 'EmpNo', 'employee_number')->where('EmpStatus', 1)->select(['EmpNo','fkDepartment','fkPosition']);
     }
-
-    public function invoice_user_info(){
-        return $this->hasOne(UserManagement::class, 'rapidx_user_id', 'id')->where('logdel', 0);
-    }
 }

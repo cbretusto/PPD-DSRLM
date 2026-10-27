@@ -17,8 +17,9 @@ class UserManagementRequest extends FormRequest{
 
         if ($action === 'userCreateUpdate') {
             return [
-                'name_w_id'     => 'required|string',
+                // 'name_w_id'     => 'required|string',
                 'employee_no'   => 'required',
+                'user_level'    => 'required',
                 'email'         => 'required',
                 'department'    => 'required',
                 'position'      => 'required',
@@ -47,8 +48,9 @@ class UserManagementRequest extends FormRequest{
 
         if ($action === 'userCreateUpdate') {
             return [
-                'name_w_id.required'    => 'Name is required.',
+                // 'name_w_id.required'    => 'Name is required.',
                 'employee_no.required'  => 'Employee number is required.',
+                'user_level.required'   => 'User level is required.',
                 'email.required'        => 'Email is required.',
                 'department.required'   => 'Department is required.',
                 'position.required'     => 'Position is required.',

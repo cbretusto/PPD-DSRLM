@@ -1,9 +1,15 @@
 @php
     session_start();
     if(isset($_SESSION['ppd_dsrlm_classification'])){
-        $userClassifcation = $_SESSION['ppd_dsrlm_classification'];
+        $userClassification = $_SESSION['ppd_dsrlm_classification'];
     }else{
-        $userClassifcation = 0;
+        $userClassification = 0;
+    }
+
+    if(isset($_SESSION['ppd_dsrlm_user_level'])){
+        $userLevel = $_SESSION['ppd_dsrlm_user_level'];
+    }else{
+        $userLevel = 0;
     }
 
     $layout = 'layouts.layout';
@@ -303,22 +309,27 @@
                                     </div>
                                 </div>
 
-                                <div class="ms-auto">
-                                    <button type="button" class="btn btn-dark load-table" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
-                                        <i class="fa fa-plus fa-md me-1"></i>
-                                        New Data
-                                    </button>
-                                </div>
+                                @if($userClassification == 3 || $userLevel == 2)
+                                    <div class="ms-auto">
+                                        <button type="button" class="btn btn-dark load-table" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
+                                            <i class="fa fa-plus fa-md me-1"></i>
+                                            New Data
+                                        </button>
+                                    </div>
+                                @endif
+
                             </div>
 
                             <div class="card-body">
-                                <div class="position-relative">
-                                    <meta name="csrf-token" content="{{ csrf_token() }}">
-                                    <button type="button" class="btn btn-info load-table" id="btnUpdateAllClassification">
-                                        <i class="fa fa-plus fa-md me-1" id="iBtnUpdateAllClassificationIcon"></i>
-                                        Update All Classification
-                                    </button>
-                                </div>
+                                @if($userClassification == 3 || $userLevel == 2)
+                                    <div class="position-relative">
+                                        <meta name="csrf-token" content="{{ csrf_token() }}">
+                                        <button type="button" class="btn btn-info load-table" id="btnUpdateAllClassification">
+                                            <i class="fa fa-plus fa-md me-1" id="iBtnUpdateAllClassificationIcon"></i>
+                                            Update All Classification
+                                        </button>
+                                    </div>
+                                @endif
 
                                 <div class="table-responsive">
                                     <table id="tableDevice" class="table table-bordered table-hover nowrap w-100">
@@ -632,11 +643,15 @@
                                         <i class="fas fa-screwdriver-wrench text-dark fs-3"></i>
                                     </div>
                                 </div>
-
                                 <h6 class="fw-bold mb-2">Change Device Status?</h6>
-
                                 <p class="text-muted small mb-0" id="lblDeviceChangeStatusLabel"></p>
                             </div>
+                        </div>
+
+                        <!-- Remark Select -->
+                        <div class="text-start mt-3">
+                            <select class="form-select get-remark" name="device_remark_status" id="slctDeviceRemarkStatus" required>
+                            </select>
                         </div>
                     </div>
 
@@ -929,7 +944,7 @@
                     </ul>
 
                     <div class="tab-content" id="deviceHistoryTabContent">
-                        @if($userClassifcation == 2)
+                        @if($userClassification == 2 || $userLevel == 2)
                             <div class="row row align-items-end g-3">
                                 <div id="historyResetFilters" class="col-md-7">
                                     <div class="row align-items-end g-3">
@@ -1524,6 +1539,8 @@
             $(document).on('click', '.actionDeviceChangeStatus', function(){
                 let deviceStatus = $(this).attr('status');
                 deviceId = $(this).attr('device-id');
+                remarkType = 2
+
                 $("#txtDeviceChangeStatus").val(deviceStatus);
                 $("#txtDeviceChangeStatusId").val(deviceId);
 
@@ -1535,6 +1552,7 @@
                     $("#lblDeviceChangeStatusLabel").text('Are you sure to deactivate?');
                     $("#h4DeviceChangeStatusTitle").html('Deactivate Device');
                 }
+                GetRemark($('.get-remark'), Number(remarkType));
             });
 
             $("#formDeviceChangeStatus").submit(function(event){
@@ -1650,14 +1668,14 @@
                     return;
                 }
 
-                if(historySalesQuantityYEC == 0){
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Missing Sales Quantity',
-                        text: 'Please enter sales quantity for YEC or PMI before resetting.'
-                    });
-                    return;
-                }
+                // if(historySalesQuantityYEC == 0){
+                //     Swal.fire({
+                //         icon: 'warning',
+                //         title: 'Missing Sales Quantity',
+                //         text: 'Please enter sales quantity for YEC or PMI before resetting.'
+                //     });
+                //     return;
+                // }
 
                 const dateFrom = $('#historyDateFrom').val();
                 const dateTo = $('#historyDateTo').val();

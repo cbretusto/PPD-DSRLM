@@ -44,7 +44,7 @@ class UserManagementController extends Controller{
 
     public function userCreateUpdate(UserManagementRequest $request){
         $userId = $request->user_id;
-        $data = $request->only(['name_w_id', 'department', 'position', 'email']);
+        $data = $request->only(['name_w_id', 'user_level', 'department', 'position', 'email']);
         $result = $this->userManagementService->createOrUpdateUserService($userId, $data);
 
         return response()->json($result);

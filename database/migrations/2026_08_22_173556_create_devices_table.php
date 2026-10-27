@@ -20,6 +20,7 @@ class CreateDevicesTable extends Migration
             $table->integer('tool_life')->nullable();
             $table->unsignedTinyInteger('classification')->default(0)->comment('0-N/A, 1-For Longevity Application, 2-Waiting for Longevity Parts, 3-For YEC Approval, 4-Ongoing Longevity Application');
             $table->string('attachment')->nullable();
+            $table->string('remark_status')->nullable();
             $table->unsignedTinyInteger('status')->default(0)->comment('0-active, 1-deactivate');
             $table->string('process_type')->nullable()->comment('0 - PPD-CN, 1 - PPD - TS, 2 - STAMPING');
             $table->unsignedTinyInteger('logdel')->default(0)->comment('0-Show, 1-Hide');
