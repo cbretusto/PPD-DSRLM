@@ -21,13 +21,15 @@ class DeviceService
         $userLevel = (int) $request->input('user_level', 0);
         $canManageDevice = ($userClassification === 3 || $userLevel === 2);
 
-        // Additional logic: percentage counts only
         $percentageCounts = [
-            'count_70_79'  => 0,
-            'count_80_99'  => 0,
-            'count_100_up' => 0,
+            'count_normal'         => 0,
+            'count_70_79'          => 0,
+            'count_80_99'          => 0,
+            'count_100_up'         => 0,
+            'count_reset_approval' => 0,
         ];
 
+        // Compute percentage and pending status once per device.
         foreach ($deviceDetails as $device) {
             $toolLife = (float) $device->tool_life;
             $totalActualSo = (float) $device->total_actual_so;
@@ -36,152 +38,184 @@ class DeviceService
                 ? ($totalActualSo / $toolLife) * 100
                 : 0;
 
+            $device->actual_percentage = $percentage;
+
+            $hasPendingApproval = false;
+
+            foreach ($device->device_reset_history_details ?? [] as $history) {
+                if ((int) $history->approval_status === 0) {
+                    $percentageCounts['count_reset_approval']++;
+                    $hasPendingApproval = true;
+                }
+            }
+
+            $device->has_pending_reset_approval = $hasPendingApproval;
+
             if ($percentage >= 100) {
                 $percentageCounts['count_100_up']++;
             } elseif ($percentage >= 80) {
                 $percentageCounts['count_80_99']++;
             } elseif ($percentage >= 70) {
                 $percentageCounts['count_70_79']++;
+            } else {
+                $percentageCounts['count_normal']++;
             }
         }
 
-        // Sort by actual percentage DESC
-        $deviceDetails = $deviceDetails->sortByDesc(function ($device) {
-            $toolLife = (float) $device->tool_life;
-            $totalActualSo = (float) $device->total_actual_so;
+        // Apply selected summary filter using precomputed values.
+        $summaryFilter = $request->input('summaryFilter');
 
-            return $toolLife > 0
-                ? ($totalActualSo / $toolLife) * 100
-                : 0;
-        })->values();
+        if ($summaryFilter) {
+            $deviceDetails = $deviceDetails->filter(
+                function ($device) use ($summaryFilter) {
+                    $percentage = $device->actual_percentage;
+
+                    switch ($summaryFilter) {
+                        case 'normal':
+                            return $percentage < 70;
+
+                        case '70_79':
+                            return $percentage >= 70 && $percentage < 80;
+
+                        case '80_99':
+                            return $percentage >= 80 && $percentage < 100;
+
+                        case '100_up':
+                            return $percentage >= 100;
+
+                        case 'reset_approval':
+                            return $device->has_pending_reset_approval;
+
+                        default:
+                            return true;
+                    }
+                }
+            )->values();
+        }
+
+        // Preserve existing descending percentage sort.
+        $deviceDetails = $deviceDetails->sortByDesc('actual_percentage')->values();
 
         return DataTables::of($deviceDetails)
-            ->addColumn('action', function ($deviceDetail) use ($canManageDevice) {
-                $btns = '<center>';
+        ->addColumn('action', function ($deviceDetail) use ($canManageDevice) {
+            $btns = '<center>';
 
-                if ($deviceDetail->status == 0) {
-                    if ($canManageDevice) {
-                        $btns .= '<button
-                            type="button"
-                            class="btn btn-dark btn-sm actionUpdateDevice"
-                            device-id="' . $deviceDetail->id . '"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceCreateUpdate"
-                            title="Edit Device Details">
-                            <i class="fa fa-edit"></i>
-                        </button>&nbsp;';
-                    }
-
-                    // View Device History: visible to all
+            if ($deviceDetail->status == 0) {
+                if ($canManageDevice) {
                     $btns .= '<button
                         type="button"
-                        class="btn btn-info btn-sm actionDeviceHistory"
+                        class="btn btn-dark btn-sm actionUpdateDevice"
                         device-id="' . $deviceDetail->id . '"
-                        device-code="' . $deviceDetail->device_code . '"
-                        device-name="' . $deviceDetail->device_name . '"
-                        tool-life="' . $deviceDetail->tool_life . '"
-                        pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
-                        yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
-                        device-total_qty="' . $deviceDetail->total_qty . '"
-                        device-classification="' . $deviceDetail->classification . '"
-                        device-attachment="' . $deviceDetail->attachment . '"
-                        dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
-                        dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
-                        dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
-                        dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
                         data-bs-toggle="modal"
-                        data-bs-target="#modalDeviceHistory"
-                        title="View Device History">
-                        <i class="fa fa-history"></i>
+                        data-bs-target="#modalDeviceCreateUpdate"
+                        title="Edit Device Details">
+                        <i class="fa fa-edit"></i>
                     </button>&nbsp;';
-
-                    if ($canManageDevice) {
-                        $btns .= '<button
-                            type="button"
-                            class="btn btn-danger btn-sm actionDeviceChangeStatus"
-                            device-id="' . $deviceDetail->id . '"
-                            status="1"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceChangeStatus"
-                            title="Deactivate Device">
-                            <i class="fa-solid fa-ban"></i>
-                        </button>';
-                    }
-                } else {
-                    if ($canManageDevice) {
-                        $btns .= '<button
-                            type="button"
-                            class="btn btn-warning btn-sm actionDeviceChangeStatus"
-                            device-id="' . $deviceDetail->id . '"
-                            status="0"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDeviceChangeStatus"
-                            title="Activate Device">
-                            <i class="fa-solid fa-arrow-rotate-right"></i>
-                        </button>';
-                    }
                 }
 
-                return $btns;
-            })
-            ->addColumn('status', function ($deviceDetail) {
-                $status = $deviceDetail->status == 0
-                    ? 'Active'
-                    : 'Inactive';
+                // View Device History: visible to all
+                $btns .= '<button
+                    type="button"
+                    class="btn btn-info btn-sm actionDeviceHistory"
+                    device-id="' . $deviceDetail->id . '"
+                    device-code="' . $deviceDetail->device_code . '"
+                    device-name="' . $deviceDetail->device_name . '"
+                    tool-life="' . $deviceDetail->tool_life . '"
+                    pmi-sales-quantity="' . $deviceDetail->pmi_sales_qty . '"
+                    yec-sales-quantity="' . $deviceDetail->yec_sales_qty . '"
+                    device-total_qty="' . $deviceDetail->total_qty . '"
+                    device-classification="' . $deviceDetail->classification . '"
+                    device-attachment="' . $deviceDetail->attachment . '"
+                    dieset-drawing_no="' . optional($deviceDetail->dieset_device_code_info)->DrawingNo . '"
+                    dieset-drawing_revision="' . optional($deviceDetail->dieset_device_code_info)->Rev . '"
+                    dieset-date="' . optional($deviceDetail->dieset_device_code_info)->Date . '"
+                    dieset-die_no="' . optional($deviceDetail->dieset_device_code_info)->DieNo . '"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalDeviceHistory"
+                    title="View Device History">
+                    <i class="fa fa-history"></i>
+                </button>&nbsp;';
 
-                $badgeClass = $deviceDetail->status == 0
-                    ? 'success'
-                    : 'danger';
-
-                return '<center>
-                            <span class="badge bg-' . $badgeClass . '">
-                                ' . $status . '
-                            </span><br>
-                            ' . $deviceDetail->remark_status . '
-                        </center>';
-            })
-
-            ->addColumn('total_actual_so', function ($device) {
-                return number_format(
-                    (float) $device->total_actual_so,
-                    0
-                );
-            })
-
-            ->addColumn('percentage', function ($device) {
-                $toolLife = (float) $device->tool_life;
-                $totalActualSo = (float) $device->total_actual_so;
-
-                // Calculate actual percentage
-                $percentage = $toolLife > 0
-                    ? ($totalActualSo / $toolLife) * 100
-                    : 0;
-
-                // Color based on actual percentage
-                if ($percentage >= 100) {
-                    $icon = 'fa-exclamation-triangle';
-                    $color = 'red';
-                } elseif ($percentage >= 80) {
-                    $icon = 'fa-exclamation-triangle';
-                    $color = 'orange';
-                } elseif ($percentage >= 70) {
-                    $icon = 'fa-exclamation-triangle';
-                    $color = 'blue';
-                } else {
-                    $icon = 'fa-check-circle';
-                    $color = 'gray';
+                if ($canManageDevice) {
+                    $btns .= '<button
+                        type="button"
+                        class="btn btn-danger btn-sm actionDeviceChangeStatus"
+                        device-id="' . $deviceDetail->id . '"
+                        status="1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalDeviceChangeStatus"
+                        title="Deactivate Device">
+                        <i class="fa-solid fa-ban"></i>
+                    </button>';
                 }
+            } else {
+                if ($canManageDevice) {
+                    $btns .= '<button
+                        type="button"
+                        class="btn btn-warning btn-sm actionDeviceChangeStatus"
+                        device-id="' . $deviceDetail->id . '"
+                        status="0"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalDeviceChangeStatus"
+                        title="Activate Device">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                    </button>';
+                }
+            }
 
-                return '
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa ' . $icon . ' icon-shadow"
-                            style="font-size:25px; color:' . $color . ';"
-                            title="' . number_format($percentage, 0) . '%">
-                        </i>
-                        <span>' . number_format($percentage, 0) . '%</span>
-                    </div>
-                ';
-            })
+            return $btns;
+        })
+        ->addColumn('status', function ($deviceDetail) {
+            $status = $deviceDetail->status == 0
+                ? 'Active'
+                : 'Inactive';
+
+            $badgeClass = $deviceDetail->status == 0
+                ? 'success'
+                : 'danger';
+
+            return '<center>
+                        <span class="badge bg-' . $badgeClass . '">
+                            ' . $status . '
+                        </span><br>
+                        ' . $deviceDetail->remark_status . '
+                    </center>';
+        })
+
+        ->addColumn('total_actual_so', function ($device) {
+            return number_format(
+                (float) $device->total_actual_so,
+                0
+            );
+        })
+
+        ->addColumn('percentage', function ($device) {
+            $percentage = $device->actual_percentage;
+
+            if ($percentage >= 100) {
+                $icon = 'fa-exclamation-triangle';
+                $color = 'red';
+            } elseif ($percentage >= 80) {
+                $icon = 'fa-exclamation-triangle';
+                $color = 'orange';
+            } elseif ($percentage >= 70) {
+                $icon = 'fa-exclamation-triangle';
+                $color = 'blue';
+            } else {
+                $icon = 'fa-check-circle';
+                $color = 'gray';
+            }
+
+            return '
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa ' . $icon . ' icon-shadow"
+                        style="font-size:25px; color:' . $color . ';"
+                        title="' . number_format($percentage, 0) . '%">
+                    </i>
+                    <span>' . number_format($percentage, 0) . '%</span>
+                </div>
+            ';
+        })
 
         ->addColumn('attachment', function ($deviceDetail) {
             $result = '';
@@ -210,15 +244,15 @@ class DeviceService
             return $result ?: '-';
         })
 
-            ->rawColumns([
-                'action',
-                'status',
-                'total_actual_so',
-                'percentage',
-                'attachment'
-            ])
-            ->with('percentage_counts', $percentageCounts)
-            ->make(true);
+        ->rawColumns([
+            'action',
+            'status',
+            'total_actual_so',
+            'percentage',
+            'attachment'
+        ])
+        ->with('percentage_counts', $percentageCounts)
+        ->make(true);
     }
 
     public function getDeviceHistoryForDataTable($request){

@@ -17,7 +17,7 @@
 @extends($layout)
 @section('title', 'Device')
 @section('content_page')
-                    <style>
+    <style>
         .col-5-items {
             flex: 0 0 auto;
             width: 20%;
@@ -241,6 +241,22 @@
                 width: 100%;
             }
         }
+
+        .device-summary-item.summary-filter {
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .device-summary-item.summary-filter:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .device-summary-item.summary-filter.active {
+            background-color: #eff6ff;
+            border: 2px solid #3b82f6;
+        }
+
         .device-summary-item {
             display: inline-flex;
             align-items: center;
@@ -326,79 +342,80 @@
                                     </select>
                                 </div>
 
-                                {{-- <div class="d-flex align-items-center ms-5 gap-5">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-check-circle icon-shadow" style="font-size:30px; color:gray;"></i>
-
-                                        <span class="ms-1 fw-bold">
-                                            Normal
-                                        </span>
-                                    </div>
-
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:blue;"></i>
-
-                                        <span class="ms-1 fw-bold">
-                                            70% - 79%
-                                        </span>
-                                    </div>
-
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:orange;"></i>
-
-                                        <span class="ms-1 fw-bold">
-                                            80% - 99%
-                                        </span>
-                                    </div>
-
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-exclamation-triangle icon-shadow" style="font-size:30px; color:red;"></i>
-
-                                        <span class="ms-1 fw-bold">
-                                            100% and Above
-                                        </span>
-                                    </div>
-
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-thumbs-up icon-shadow" style="font-size:30px; color:green;"></i>
-
-                                        <span class="ms-1 fw-bold">
-                                            Reset - For Approval
-                                        </span>
-                                    </div>
-                                </div> --}}
-
-                                <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-4 my-2">
+                                {{-- <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-4 my-2">
                                     <div class="device-summary-item">
                                         <i class="fa fa-check-circle summary-icon text-secondary"></i>
-                                        <span class="summary-label">Normal</span>
+                                        <span class="summary-label">Normal</span>-
                                         <span class="summary-count text-secondary" id="count_normal">0</span>
                                     </div>
 
                                     <div class="device-summary-item">
                                         <i class="fa fa-exclamation-triangle summary-icon text-primary"></i>
-                                        <span class="summary-label">70% - 79%</span>
+                                        <span class="summary-label">70% - 79%</span>-
                                         <span class="summary-count text-primary" id="count_70_79">0</span>
                                     </div>
 
                                     <div class="device-summary-item">
                                         <i class="fa fa-exclamation-triangle summary-icon text-warning"></i>
-                                        <span class="summary-label">80% - 99%</span>
+                                        <span class="summary-label">80% - 99%</span>-
                                         <span class="summary-count text-warning" id="count_80_99">0</span>
                                     </div>
 
                                     <div class="device-summary-item">
                                         <i class="fa fa-exclamation-triangle summary-icon text-danger"></i>
-                                        <span class="summary-label">100% and Above</span>
+                                        <span class="summary-label">100% and Above</span>-
                                         <span class="summary-count text-danger" id="count_100_up">0</span>
                                     </div>
 
                                     <div class="device-summary-item">
                                         <i class="fa fa-thumbs-up summary-icon text-success"></i>
-                                        <span class="summary-label">Reset - For Approval</span>
+                                        <span class="summary-label">Reset - For Approval</span>-
+                                        <span class="summary-count text-success" id="count_reset_approval">0</span>
+                                    </div>
+                                </div> --}}
+
+                                <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-4 my-2">
+                                    <div class="device-summary-item summary-filter"
+                                        data-summary-filter="normal"
+                                        role="button" tabindex="0">
+                                        <i class="fa fa-check-circle summary-icon text-secondary"></i>
+                                        <span class="summary-label">Normal</span>-
+                                        <span class="summary-count text-secondary" id="count_normal">0</span>
+                                    </div>
+
+                                    <div class="device-summary-item summary-filter"
+                                        data-summary-filter="70_79"
+                                        role="button" tabindex="0">
+                                        <i class="fa fa-exclamation-triangle summary-icon text-primary"></i>
+                                        <span class="summary-label">70% - 79%</span>-
+                                        <span class="summary-count text-primary" id="count_70_79">0</span>
+                                    </div>
+
+                                    <div class="device-summary-item summary-filter"
+                                        data-summary-filter="80_99"
+                                        role="button" tabindex="0">
+                                        <i class="fa fa-exclamation-triangle summary-icon text-warning"></i>
+                                        <span class="summary-label">80% - 99%</span>-
+                                        <span class="summary-count text-warning" id="count_80_99">0</span>
+                                    </div>
+
+                                    <div class="device-summary-item summary-filter"
+                                        data-summary-filter="100_up"
+                                        role="button" tabindex="0">
+                                        <i class="fa fa-exclamation-triangle summary-icon text-danger"></i>
+                                        <span class="summary-label">100% and Above</span>-
+                                        <span class="summary-count text-danger" id="count_100_up">0</span>
+                                    </div>
+
+                                    <div class="device-summary-item summary-filter"
+                                        data-summary-filter="reset_approval"
+                                        role="button" tabindex="0">
+                                        <i class="fa fa-thumbs-up summary-icon text-success"></i>
+                                        <span class="summary-label">Reset - For Approval</span>-
                                         <span class="summary-count text-success" id="count_reset_approval">0</span>
                                     </div>
                                 </div>
+
                                 @if($userClassification == 3 || $userLevel == 2)
                                     <div class="ms-auto">
                                         <button type="button" class="btn btn-dark load-table" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
@@ -411,7 +428,7 @@
                             </div>
 
                             <div class="card-body">
-                                @if($userClassification == 3 || $userLevel == 2)
+                                @if($userLevel == 2)
                                     <div class="position-relative">
                                         <meta name="csrf-token" content="{{ csrf_token() }}">
                                         <button type="button" class="btn btn-info load-table" id="btnUpdateAllClassification">
@@ -1499,6 +1516,7 @@
         let processType = ""
         let historyAttachment = ''
         let historyClassification = ''
+        let selectedSummaryFilter = null;
 
         $(document).ready(function () {
             resetModalFormValues();
@@ -1557,6 +1575,7 @@
                     data: function (d) {
                         d.deviceCode = deviceCode;
                         d.processType = processType;
+                        d.summaryFilter = selectedSummaryFilter;
                     }
                 },
                 "columns":[
@@ -1605,9 +1624,29 @@
 
                 const counts = response.percentage_counts;
 
+                $('#count_normal').text(counts.count_normal ?? 0);
                 $('#count_70_79').text(counts.count_70_79 ?? 0);
                 $('#count_80_99').text(counts.count_80_99 ?? 0);
                 $('#count_100_up').text(counts.count_100_up ?? 0);
+                $('#count_reset_approval').text(counts.count_reset_approval ?? 0);
+            });
+
+            $(document).on('click', '.summary-filter', function () {
+                const filter = $(this).data('summary-filter');
+
+                // Click again to clear the selected filter.
+                selectedSummaryFilter =
+                    selectedSummaryFilter === filter ? null : filter;
+
+                $('.summary-filter').removeClass('active');
+
+                if (selectedSummaryFilter !== null) {
+                    $('.summary-filter[data-summary-filter="' +
+                        selectedSummaryFilter + '"]').addClass('active');
+                }
+
+                // Fetch matching records from the server.
+                dataTableDevice.draw();
             });
 
             $("#tableDevice").on("preXhr.dt", function () {

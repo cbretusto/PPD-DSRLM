@@ -189,17 +189,10 @@ class DeviceRepository implements DeviceInterface
             ->whereIn('ds.R3Code', $deviceCodes);
 
         if ($devicesWithReset->isNotEmpty()) {
-            $query->where(function ($outer) use (
-                $devicesWithoutReset,
-                $devicesWithReset,
-                $resetRangesByDevice
-            ) {
+            $query->where(function ($outer) use ( $devicesWithoutReset, $devicesWithReset, $resetRangesByDevice) {
                 // Include all delivery records for devices without reset history.
                 if ($devicesWithoutReset->isNotEmpty()) {
-                    $outer->whereIn(
-                        'ds.R3Code',
-                        $devicesWithoutReset
-                    );
+                    $outer->whereIn('ds.R3Code',$devicesWithoutReset);
                 }
 
                 // Include only dates outside every reset range.
@@ -215,17 +208,10 @@ class DeviceRepository implements DeviceInterface
                                 ->addDay()
                                 ->toDateString() . ' 00:00:00';
 
-                            $deviceQuery->where(function ($dateQuery) use (
-                                $from,
-                                $toExclusive
-                            ) {
+                            $deviceQuery->where(function ($dateQuery) use ( $from, $toExclusive) {
                                 $dateQuery
                                     ->where('du.LastUpdate', '<', $from)
-                                    ->orWhere(
-                                        'du.LastUpdate',
-                                        '>=',
-                                        $toExclusive
-                                    );
+                                    ->orWhere('du.LastUpdate', '>=', $toExclusive);
                             });
                         }
                     });
@@ -245,7 +231,7 @@ class DeviceRepository implements DeviceInterface
 
         /*
         * Attach totals to every device.
-        * Missing remote device codes receive a total of zero.
+        * Missing device codes receive a total of zero.
         */
         $devices->each(function ($device) use ($actualSos) {
             $device->total_actual_so = $actualSos->get(
