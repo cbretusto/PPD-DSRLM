@@ -242,78 +242,448 @@
             }
         }
 
-        .device-summary-item.summary-filter {
-            cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
+        /* =========================================
+        DEVICE HEADER
+        ========================================= */
+        .device-header {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            padding: 22px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9edf3;
         }
 
-        .device-summary-item.summary-filter:hover {
-            background-color: #f8fafc;
-            border-color: #94a3b8;
+        .device-header-top,
+        .device-header-controls,
+        .device-heading,
+        .device-summary-toolbar-top {
+            display: flex;
+            align-items: center;
         }
 
-        .device-summary-item.summary-filter.active {
-            background-color: #eff6ff;
-            border: 2px solid #3b82f6;
+        .device-header-top {
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        .device-summary-item {
+        .device-heading {
+            gap: 13px;
+            min-width: 0;
+        }
+
+        .device-heading-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            color: #ffffff;
+            background: #212529;
+            border-radius: 12px;
+            font-size: 21px;
+        }
+
+        .device-heading .card-title {
+            color: #212529;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .device-heading small {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .device-header-controls {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .department-select {
+            position: relative;
+            min-width: 205px;
+        }
+
+        .department-select > i {
+            position: absolute;
+            top: 50%;
+            left: 13px;
+            z-index: 2;
+            transform: translateY(-50%);
+            color: #737d8c;
+            pointer-events: none;
+        }
+
+        .department-select .form-select {
+            min-height: 42px;
+            padding-left: 37px;
+            border-color: #dfe4ec;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .device-action-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            min-height: 42px;
+            padding: 10px 15px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .device-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================================
+        SUMMARY TOOLBAR
+        ========================================= */
+        .device-summary-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-top: 18px;
+            border-top: 1px solid #edf0f4;
+        }
+
+        .device-summary-toolbar-top {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .summary-toolbar-label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: auto;
+            color: #495465;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .summary-toolbar-label i {
+            color: #7c8798;
+        }
+
+
+        /* =========================================
+        VIEW TOGGLE
+        ========================================= */
+        /* Toggle container */
+        .device-view-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px;
+            background: #f1f3f5;
+            border: 1px solid #e1e5ea;
+            border-radius: 10px;
+        }
+
+        /* Default / inactive button */
+        .device-view-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: #667085;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Hover */
+        .device-view-btn:hover:not(.active) {
+            background: #e2e5e9;
+            color: #212529;
+        }
+
+        /* Active / selected button */
+        .device-view-btn.active {
+            background: #212529;
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+        }
+
+        /* Active icon */
+        .device-view-btn.active i {
+            color: #ffffff;
+        }
+
+        /* Keyboard accessibility */
+        .device-view-btn:focus-visible {
+            outline: 2px solid #0d6efd;
+            outline-offset: 2px;
+        }
+
+
+
+        /* =========================================
+        SUMMARY GRID
+        ========================================= */
+        .device-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            align-items: stretch;
+        }
+
+
+        /* =========================================
+        SUMMARY ITEM
+        Icon + Label + Count = ONE LINE
+        ========================================= */
+        .device-summary-item {
+            --summary-color: #667085;
+            --summary-bg: #f5f6f8;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
             gap: 8px;
 
-            height: 48px;
-            padding: 0 14px;
-            min-width: 165px;
+            min-width: 0;
+            min-height: 58px;
+            padding: 10px 12px;
 
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9edf3;
+            /* border-left: 1px solid var(--summary-color); */
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
 
-            white-space: nowrap;
-            transition: box-shadow 0.2s ease;
+            background: #ffffff;
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                transform 0.2s ease;
         }
 
         .device-summary-item:hover {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            background: var(--summary-bg);
+            border-color: var(--summary-color);
+            box-shadow: 0 3px 10px rgba(16, 24, 40, 0.06);
+            transform: translateY(-1px);
         }
 
-        .summary-icon {
-            font-size: 20px;
-            line-height: 1;
+        .device-summary-item:active {
+            transform: translateY(0);
+        }
+
+
+        /* ICON */
+        .device-summary-item .summary-icon {
             flex-shrink: 0;
+            color: var(--summary-color);
+            font-size: 16px;
         }
 
-        .summary-label {
-            color: #4b5563;
-            font-size: 13px;
+
+        /* LABEL + COUNT CONTAINER */
+        .device-summary-item .summary-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+
+            flex: 1;
+            min-width: 0;
+            gap: 8px;
+        }
+
+
+        /* LABEL */
+        .device-summary-item .summary-label {
+            flex: 1;
+            min-width: 0;
+
+            color: #667085;
+            font-size: 11px;
             font-weight: 600;
-            line-height: 1;
+            line-height: 1.3;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .summary-count {
-            font-size: 18px;
-            font-weight: 700;
+
+        /* COUNT */
+        .device-summary-item .summary-count {
+            flex-shrink: 0;
+
+            color: #212529;
+            font-size: 17px;
+            font-weight: 750;
             line-height: 1;
-            margin-left: auto;
+
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
-        @media (max-width: 768px) {
-            .device-summary-item {
-                flex: 1 1 calc(50% - 8px);
+
+        /* =========================================
+        SUMMARY COLORS
+        ========================================= */
+        .summary-normal {
+            --summary-color: #667085;
+            --summary-bg: #f6f7f9;
+        }
+
+        .summary-info {
+            --summary-color: #2878d0;
+            --summary-bg: #f0f7ff;
+        }
+
+        .summary-warning {
+            --summary-color: #d99500;
+            --summary-bg: #fff9e9;
+        }
+
+        .summary-danger {
+            --summary-color: #dc3545;
+            --summary-bg: #fff3f4;
+        }
+
+        .summary-success {
+            --summary-color: #198754;
+            --summary-bg: #eefaf3;
+        }
+
+
+        /* SELECTED FILTER */
+        .device-summary-item.active,
+        .device-summary-item.is-active {
+            background: var(--summary-bg);
+            border-color: var(--summary-color);
+            box-shadow: 0 0 0 2px
+                color-mix(in srgb, var(--summary-color) 12%, transparent);
+        }
+
+
+        /* =========================================
+        RESET APPROVAL
+        ========================================= */
+        .reset-approval-item {
+            /* background: #f5fbf7; */
+        }
+        .reset-approval-item .summary-label {
+            color: #344054;
+        }
+
+        .reset-approval-item .summary-count {
+            color: #198754;
+        }
+
+
+        /* =========================================
+        RESPONSIVE
+        ========================================= */
+        @media (max-width: 1200px) {
+            .device-summary-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .device-header {
+                padding: 17px 15px;
+                gap: 18px;
+            }
+
+            .device-header-top {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .device-header-controls {
+                width: 100%;
+            }
+
+            .department-select {
+                flex: 1;
                 min-width: 0;
-                padding: 0 10px;
+            }
+
+            .device-header-controls .device-action-btn {
+                flex: 1;
+            }
+
+            .device-summary-toolbar-top {
+                align-items: stretch;
+            }
+
+            .summary-toolbar-label {
+                width: 100%;
+            }
+
+            .device-view-toggle {
+                flex: 1;
+            }
+
+            .device-view-btn {
+                flex: 1;
+                padding: 8px 10px;
+            }
+
+            .device-summary-toolbar-top > .device-action-btn {
+                width: 100%;
+            }
+
+            .device-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 9px;
+            }
+
+            .device-summary-item {
                 gap: 7px;
+                min-height: 54px;
+                padding: 9px 8px;
             }
 
-            .summary-label {
-                font-size: 12px;
+            .device-summary-item .summary-icon {
+                font-size: 14px;
             }
 
-            .summary-count {
-                font-size: 16px;
+            .device-summary-item .summary-label {
+                font-size: 10px;
+            }
+
+            .device-summary-item .summary-count {
+                font-size: 15px;
+            }
+
+            .device-summary-item .summary-content {
+                gap: 5px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .device-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .device-view-btn {
+                font-size: 11px;
+                padding: 8px 6px;
             }
         }
     </style>
@@ -324,119 +694,161 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card">
-                            <div class="card-header d-flex align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-microchip me-2" style="font-size: 20px;"></i>
+                            <div class="card-header device-header">
+                                <div class="device-header-top">
+                                    <div class="device-heading">
+                                        <div class="device-heading-icon">
+                                            <i class="fas fa-microchip"></i>
+                                        </div>
 
-                                    <h3 class="card-title mb-0">
-                                        Device
-                                    </h3>
-                                </div>
-
-                                <div class="ms-4">
-                                    <select id="processFilter"class="form-select">
-                                        <option value="" selected disabled>-- Select Department --</option>
-                                        <option value="0">PPD CN</option>
-                                        <option value="1">PPD TS</option>
-                                        <option value="2">Stamping</option>
-                                    </select>
-                                </div>
-
-                                {{-- <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-4 my-2">
-                                    <div class="device-summary-item">
-                                        <i class="fa fa-check-circle summary-icon text-secondary"></i>
-                                        <span class="summary-label">Normal</span>-
-                                        <span class="summary-count text-secondary" id="count_normal">0</span>
+                                        <div>
+                                            <h3 class="card-title mb-0">Device Management</h3><br>
+                                            <small class="text-muted">
+                                                Monitor device utilization and classifications
+                                            </small>
+                                        </div>
                                     </div>
 
-                                    <div class="device-summary-item">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-primary"></i>
-                                        <span class="summary-label">70% - 79%</span>-
-                                        <span class="summary-count text-primary" id="count_70_79">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-warning"></i>
-                                        <span class="summary-label">80% - 99%</span>-
-                                        <span class="summary-count text-warning" id="count_80_99">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-danger"></i>
-                                        <span class="summary-label">100% and Above</span>-
-                                        <span class="summary-count text-danger" id="count_100_up">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item">
-                                        <i class="fa fa-thumbs-up summary-icon text-success"></i>
-                                        <span class="summary-label">Reset - For Approval</span>-
-                                        <span class="summary-count text-success" id="count_reset_approval">0</span>
-                                    </div>
-                                </div> --}}
-
-                                <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-4 my-2">
-                                    <div class="device-summary-item summary-filter"
-                                        data-summary-filter="normal"
-                                        role="button" tabindex="0">
-                                        <i class="fa fa-check-circle summary-icon text-secondary"></i>
-                                        <span class="summary-label">Normal</span>-
-                                        <span class="summary-count text-secondary" id="count_normal">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item summary-filter"
-                                        data-summary-filter="70_79"
-                                        role="button" tabindex="0">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-primary"></i>
-                                        <span class="summary-label">70% - 79%</span>-
-                                        <span class="summary-count text-primary" id="count_70_79">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item summary-filter"
-                                        data-summary-filter="80_99"
-                                        role="button" tabindex="0">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-warning"></i>
-                                        <span class="summary-label">80% - 99%</span>-
-                                        <span class="summary-count text-warning" id="count_80_99">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item summary-filter"
-                                        data-summary-filter="100_up"
-                                        role="button" tabindex="0">
-                                        <i class="fa fa-exclamation-triangle summary-icon text-danger"></i>
-                                        <span class="summary-label">100% and Above</span>-
-                                        <span class="summary-count text-danger" id="count_100_up">0</span>
-                                    </div>
-
-                                    <div class="device-summary-item summary-filter"
-                                        data-summary-filter="reset_approval"
-                                        role="button" tabindex="0">
-                                        <i class="fa fa-thumbs-up summary-icon text-success"></i>
-                                        <span class="summary-label">Reset - For Approval</span>-
-                                        <span class="summary-count text-success" id="count_reset_approval">0</span>
+                                    <div class="device-header-controls">
+                                        @if($userLevel == 2)
+                                            <meta name="csrf-token" content="{{ csrf_token() }}">
+                                            <button type="button" class="btn btn-info load-table device-action-btn" id="btnUpdateAllClassification">
+                                                <i class="fas fa-sync-alt me-2" id="iBtnUpdateAllClassificationIcon"></i> Update All Classification
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
 
-                                @if($userClassification == 3 || $userLevel == 2)
-                                    <div class="ms-auto">
-                                        <button type="button" class="btn btn-dark load-table" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
-                                            <i class="fa fa-plus fa-md me-1"></i>
-                                            New Data
-                                        </button>
-                                    </div>
-                                @endif
+                                <div class="device-summary-toolbar">
+                                    <div class="device-summary-toolbar-top">
+                                        <div class="summary-toolbar-label">
+                                            <div>
+                                                <i class="fas fa-chart-pie me-2"></i>
+                                                <span>Device Overview
+                                                    <span class="text-muted d-block mt-1">
+                                                        &emsp;&emsp;<strong class="text-danger">Note:</strong>
+                                                        <span class="text-danger text-decoration-underline">Click to view the summarized results. Click again to view all data.</span>
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
 
+                                        <div class="device-view-toggle" role="group" aria-label="Choose device summary view">
+                                            <button type="button" class="device-view-btn active" id="btnPercentageView" aria-pressed="true">
+                                                <i class="fas fa-percentage me-2"></i>
+                                                Percentage
+                                            </button>
+
+                                            <button type="button" class="device-view-btn" id="btnClassificationView" aria-pressed="false">
+                                                <i class="fas fa-layer-group me-2"></i>
+                                                Classification
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="device-summary-grid">
+                                        <div class="device-summary-item summary-filter summary-normal percentage-item" data-summary-filter="normal" role="button" tabindex="0">
+                                            <i class="fas fa-check-circle summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">Normal &emsp; -</span>
+                                                <span class="summary-count" id="count_normal">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-info percentage-item" data-summary-filter="70_79" role="button" tabindex="0">
+                                            <i class="fas fa-exclamation-triangle summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">70% – 79% &emsp; -</span>
+                                                <span class="summary-count" id="count_70_79">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-warning percentage-item" data-summary-filter="80_99" role="button" tabindex="0">
+                                            <i class="fas fa-exclamation-triangle summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">80% – 99% &emsp; -</span>
+                                                <span class="summary-count" id="count_80_99">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-danger percentage-item" data-summary-filter="100_up" role="button" tabindex="0">
+                                            <i class="fas fa-exclamation-circle summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">100% and Above &emsp; -</span>
+                                                <span class="summary-count" id="count_100_up">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-normal classification-item d-none" data-summary-filter="for_yec_approval" role="button" tabindex="0">
+                                            <i class="fas fa-file-alt summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">For YEC Approval &emsp; -</span>
+                                                <span class="summary-count" id="count_for_yec_approval">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-info classification-item d-none" data-summary-filter="waiting_for_longevity_parts" role="button" tabindex="0">
+                                            <i class="fas fa-spinner summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">Waiting for Longevity Parts &emsp; -</span>
+                                                <span class="summary-count" id="count_waiting_for_longevity_parts">0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-warning classification-item d-none" data-summary-filter="ongoing_longevity_application" role="button" tabindex="0">
+                                            <i class="fas fa-cogs summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">Ongoing Longevity Application &emsp; -</span>
+                                                <span class="summary-count" id="count_ongoing_longevity_application">0</span>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="device-summary-item summary-filter summary-danger classification-item d-none" data-summary-filter="for_longevity_application" role="button" tabindex="0">
+                                            <i class="fas fa-clipboard-check summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">For Longevity Application &emsp; -</span>
+                                                <span class="summary-count" id="count_for_longevity_application">0</span>
+
+                                            </div>
+                                        </div>
+
+
+                                        <div class="device-summary-item summary-filter summary-success reset-approval-item" data-summary-filter="reset_approval" role="button" tabindex="0" aria-label="Filter devices awaiting reset approval">
+                                            <i class="fas fa-thumbs-up summary-icon"></i>
+                                            <div class="summary-content">
+                                                <span class="summary-label">For Approval &emsp; -</span>
+                                                <span class="summary-count" id="count_reset_approval">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="card-body">
-                                @if($userLevel == 2)
-                                    <div class="position-relative">
-                                        <meta name="csrf-token" content="{{ csrf_token() }}">
-                                        <button type="button" class="btn btn-info load-table" id="btnUpdateAllClassification">
-                                            <i class="fa fa-plus fa-md me-1" id="iBtnUpdateAllClassificationIcon"></i>
-                                            Update All Classification
-                                        </button>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div class="department-select">
+                                        <label for="processFilter" class="visually-hidden">
+                                            Select Department
+                                        </label>
+
+                                        <i class="fas fa-building"></i>
+                                        <select id="processFilter" class="form-select">
+                                            <option value="" selected disabled>-- Select Department --</option>
+                                            <option value="0">PPD CN</option>
+                                            <option value="1">PPD TS</option>
+                                            <option value="2">Stamping</option>
+                                        </select>
                                     </div>
-                                @endif
+
+                                    @if($userClassification == 3 || $userLevel == 2)
+                                    <button type="button" class="btn btn-dark load-table device-action-btn" id="buttonAddDevice" data-bs-toggle="modal" data-bs-target="#modalDeviceCreateUpdate">
+                                        <i class="fas fa-plus me-2"></i>
+                                        New Data
+                                    </button>
+                                    @endif
+                                </div>
 
                                 <div class="table-responsive">
                                     <table id="tableDevice" class="table table-bordered table-hover nowrap w-100">
@@ -709,7 +1121,6 @@
     </div>
     <!-- Device Modal End -->
 
-
     <!-- Device Status Modal Start -->
     <div class="modal fade" id="modalDeviceChangeStatus" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -757,8 +1168,7 @@
 
                         <!-- Remark Select -->
                         <div class="text-start mt-3">
-                            <select class="form-select get-remark" name="device_remark_status" id="slctDeviceRemarkStatus" required>
-                            </select>
+                            <select class="form-select get-remark" name="device_remark_status" id="slctDeviceRemarkStatus" required></select>
                         </div>
                     </div>
 
@@ -941,7 +1351,6 @@
                             <div class="card border-0 shadow-sm h-100 bg-light">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="bg-dark bg-opacity-10 text-dark rounded-3 p-3 me-3">
-                                        {{-- <i class="fa fa-hourglass-half fs-4"></i> --}}
                                         <i class="fa-solid fa-clipboard-question fs-4"></i>
                                     </div>
 
@@ -1228,15 +1637,13 @@
                                     </div>
                                 </div>
                             </div>
-
                             <input type="number" class="form-control fw-bold" id="resetLastVariance" name="reset_last_variance" readonly>
                         </div>
 
                         <!-- YEC & PMI Sales Qty -->
                         <div class="mb-4">
                             <div class="row g-3">
-
-                                <!-- YEC Sales Qty - Left -->
+                                <!-- YEC Sales Qty -->
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center mb-2">
                                         <div class="bg-primary bg-opacity-10 text-primary rounded-2 p-2 me-2">
@@ -1253,18 +1660,10 @@
                                         </div>
                                     </div>
 
-                                    <input
-                                        type="number"
-                                        class="form-control fw-bold"
-                                        id="resetYecSalesQty"
-                                        name="reset_yec_sales_qty"
-                                        placeholder="Enter YEC sales qty"
-                                        min="0"
-                                        step="any"
-                                    >
+                                    <input type="number" class="form-control fw-bold" id="resetYecSalesQty" name="reset_yec_sales_qty" placeholder="Enter YEC sales qty" min="0" step="any">
                                 </div>
 
-                                <!-- PMI Sales Qty - Right -->
+                                <!-- PMI Sales Qty -->
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center mb-2">
                                         <div class="bg-info bg-opacity-10 text-info rounded-2 p-2 me-2">
@@ -1281,17 +1680,8 @@
                                         </div>
                                     </div>
 
-                                    <input
-                                        type="number"
-                                        class="form-control fw-bold"
-                                        id="resetPmiSalesQty"
-                                        name="reset_pmi_sales_qty"
-                                        placeholder="Enter PMI sales qty"
-                                        min="0"
-                                        step="any"
-                                    >
+                                    <input type="number" class="form-control fw-bold" id="resetPmiSalesQty" name="reset_pmi_sales_qty" placeholder="Enter PMI sales qty" min="0" step="any">
                                 </div>
-
                             </div>
                         </div>
                         <hr>
@@ -1338,7 +1728,6 @@
                             <select class="form-select get-ppd_dsrlm-user-approve_by bg-light border-start-0" id="resetApproveBy" name="reset_approve_by">
                             </select>
                         </div>
-
                     </div>
 
                     <!-- Footer -->
@@ -1361,7 +1750,6 @@
     <div class="modal fade" id="modalDeviceResetHistory" tabindex="-1" aria-labelledby="modalDeviceResetHistoryLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow rounded-4">
-
                 <!-- Header -->
                 <div class="bg-dark bg-gradient text-white px-3 py-3 rounded-top-4">
                     <div class="d-flex align-items-center justify-content-between">
@@ -1471,9 +1859,7 @@
                                         <i class="fas fa-screwdriver-wrench text-dark fs-3"></i>
                                     </div>
                                 </div>
-
                                 <h6 class="fw-bold mb-2">Change Device Status?</h6>
-
                                 <p class="text-muted small mb-0" id="lblDeviceHistoryChangeStatusLabel"></p>
                             </div>
                         </div>
@@ -1508,9 +1894,9 @@
         let dataTableDeviceHistoryByDate
         let deviceId
         let toolLife
+        let remarkType
         let deviceCode
         let deviceName
-        let remarkType
         let deviceDateTo
         let deviceDateFrom
         let processType = ""
@@ -1519,10 +1905,10 @@
         let selectedSummaryFilter = null;
 
         $(document).ready(function () {
+            setDeviceView('percentage');
+            ToggleLongevityFile();
             resetModalFormValues();
             UserManagementGetApproveBy($('.get-ppd_dsrlm-user-approve_by'));
-            ToggleLongevityFile();
-            // GetRemark($('.get-remark'));
 
             $('.select2bs5').each(function () {
                 $(this).select2({
@@ -1618,26 +2004,30 @@
             $('#tableDevice').on('draw.dt', function () {
                 const response = dataTableDevice.ajax.json();
 
-                if (!response || !response.percentage_counts) {
+                if (!response || !response.percentage_classification_counts) {
                     return;
                 }
 
-                const counts = response.percentage_counts;
+                const counts = response.percentage_classification_counts;
 
                 $('#count_normal').text(counts.count_normal ?? 0);
                 $('#count_70_79').text(counts.count_70_79 ?? 0);
                 $('#count_80_99').text(counts.count_80_99 ?? 0);
                 $('#count_100_up').text(counts.count_100_up ?? 0);
                 $('#count_reset_approval').text(counts.count_reset_approval ?? 0);
-            });
+
+                // Classification counts
+                $('#count_for_longevity_application').text(counts.count_for_longevity_application ?? 0);
+                $('#count_waiting_for_longevity_parts').text(counts.count_waiting_for_longevity_parts ?? 0);
+                $('#count_for_yec_approval').text(counts.count_for_yec_approval ?? 0);
+                $('#count_ongoing_longevity_application').text(counts.count_ongoing_longevity_application ?? 0);
+            })
 
             $(document).on('click', '.summary-filter', function () {
                 const filter = $(this).data('summary-filter');
 
                 // Click again to clear the selected filter.
-                selectedSummaryFilter =
-                    selectedSummaryFilter === filter ? null : filter;
-
+                selectedSummaryFilter = selectedSummaryFilter === filter ? null : filter;
                 $('.summary-filter').removeClass('active');
 
                 if (selectedSummaryFilter !== null) {
@@ -1645,7 +2035,6 @@
                         selectedSummaryFilter + '"]').addClass('active');
                 }
 
-                // Fetch matching records from the server.
                 dataTableDevice.draw();
             });
 
@@ -1752,6 +2141,7 @@
 
             $(document).on('click', '.actionDeviceHistory', function(e){
                 e.preventDefault();
+                remarkType              = 1
                 toolLife                = $(this).attr('tool-life');
                 diesetDate              = $(this).attr('dieset-date');
                 deviceCode              = $(this).attr('device-code');
@@ -1759,13 +2149,11 @@
                 diesetDieNo             = $(this).attr('dieset-die_no');
                 deviceTotalQty          = $(this).attr('device-total_qty');
                 diesetDrawingNo         = $(this).attr('dieset-drawing_no');
-                diesetDrawingRevision   = $(this).attr('dieset-drawing_revision');
                 historySalesQuantityYEC = $(this).attr('yec-sales-quantity');
                 historySalesQuantityPMI = $(this).attr('pmi-sales-quantity');
                 historyClassification   = $(this).attr('device-classification');
+                diesetDrawingRevision   = $(this).attr('dieset-drawing_revision');
                 historyAttachment       = $(this).attr('device-attachment');
-                remarkType              = 1
-                console.log('Reset Device remarkType', remarkType);
 
                 let totalSalesQuantity = Number(historySalesQuantityYEC) + Number(historySalesQuantityPMI);
                 $("#historyDeviceName").text(deviceName);
@@ -1780,6 +2168,7 @@
                 $('#historySalesQuantityPMI').text(Number(historySalesQuantityPMI || 0).toLocaleString());
                 $('#historySalesTotalQuantity').text(totalSalesQuantity);
                 $('#historyToolLifeBalance').text((Number(toolLife) - Number(totalSalesQuantity)).toLocaleString());
+
                 calculateDieSetAge(diesetDate);
 
                 dataTableDeviceHistory.draw();
@@ -1820,9 +2209,10 @@
                 //     return;
                 // }
 
-                const dateFrom = $('#historyDateFrom').val();
-                const dateTo = $('#historyDateTo').val();
-                deviceCode = $('#historyDeviceCode').text();
+                const dateFrom  = $('#historyDateFrom').val();
+                const dateTo    = $('#historyDateTo').val();
+
+                deviceCode              = $('#historyDeviceCode').text();
                 historySalesQuantityYEC = $('#historySalesQuantityYEC').text().trim().replace(/,/g, '');
                 historySalesQuantityPMI = $('#historySalesQuantityPMI').text().trim().replace(/,/g, '');
 
@@ -1950,9 +2340,9 @@
             });
 
             $(document).on('click', '.actionResetDeviceApproval', function(e){
-                deviceId = $(this).attr('device-id');
-                deviceCode = $(this).attr('device-code');
-                let approvalStatus = $(this).attr('approval-status');
+                let approvalStatus  = $(this).attr('approval-status');
+                deviceId            = $(this).attr('device-id');
+                deviceCode          = $(this).attr('device-code');
 
                 $('#txtResetDeviceApprovalId').val(deviceId);
                 $('#txtResetDeviceApprovalStatus').val(approvalStatus);
@@ -1984,6 +2374,15 @@
                 ToggleLongevityFile();
             });
 
+            // Percentage button
+            $('#btnPercentageView').on('click', function () {
+                setDeviceView('percentage');
+            });
+
+            // Classification button
+            $('#btnClassificationView').on('click', function () {
+                setDeviceView('classification');
+            });
         });
     </script>
 @endsection

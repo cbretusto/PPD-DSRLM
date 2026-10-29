@@ -503,80 +503,23 @@ class DeviceRepository implements DeviceInterface
             ->values();
     }
 
-    // public function getAllDeviceHistoryData($request){
-    //     $deviceHistories = RapidDieSet::with([
-    //         'rapid_po_received_details.rapid_delivery_confirmation_info.rapid_delivery_update_details'
-    //     ])
-    //     ->where('R3Code', $request->deviceCode)
-    //     ->select([
-    //         'Date',
-    //         'R3Code',
-    //         'DeviceName',
-    //         'DrawingNo',
-    //         'Rev',
-    //         'DieNo',
-    //     ])
-    //     ->get();
-
-    //     return $deviceHistories->flatMap(function ($deviceHistory) {
-    //         return $deviceHistory->rapid_po_received_details->flatMap(function ($poDetail) use ($deviceHistory) {
-    //             $confirmation = $poDetail->rapid_delivery_confirmation_info;
-
-    //             if (!$confirmation) {
-    //                 return collect();
-    //             }
-
-    //             return $confirmation->rapid_delivery_update_details->map(function ($updateDetail) use ( $deviceHistory, $poDetail, $confirmation){
-    //                 return [
-    //                     'DieSetR3Code'      => $deviceHistory->R3Code,
-    //                     'DieSetDeviceName'  => $deviceHistory->DeviceName,
-    //                     'DieSetDrawingNo'   => $deviceHistory->DrawingNo,
-    //                     'DieSetRev'         => $deviceHistory->Rev,
-    //                     'DieSetDieNo'       => $deviceHistory->DieNo,
-    //                     'DieSetDate'        => $deviceHistory->Date,
-
-    //                     'DeliveryUpdateId'          => $updateDetail->id,
-    //                     'DeliveryUpdateLastUpdate'  => $updateDetail->LastUpdate,
-    //                     'DeliveryUpdateActualSO'    => (int) $updateDetail->ActualSO,
-    //                     'DeliveryUpdateLotNumber'   => $updateDetail->LotNumber,
-    //                     'DeliveryUpdatePIC'         => $updateDetail->PIC,
-    //                     'DeliveryUpdateRemarks'     => $updateDetail->Remarks,
-
-    //                     'PoReceivedProductPONo' => $poDetail->ProductPONo,
-    //                     'PoReceivedOrderNo'     => $poDetail->OrderNo,
-    //                     'PoReceivedOrderQty'    => (int) $poDetail->OrderQty,
-    //                     'PoReceivedDateIssued'  => $poDetail->DateIssued,
-
-    //                     'DeliveryConformationTargetSO'      => (int) $confirmation->TargetSO,
-    //                     'DeliveryConformationShipmentDate'  => $confirmation->ShipmentDate,
-    //                     'DeliveryConformationOrderBalance'  => (int) $confirmation->OrderBalance,
-    //                 ];
-    //             });
-    //         });
-    //     })
-    //     ->sort(function ($a, $b) {
-    //         $dateCompare = strtotime($a['DeliveryUpdateLastUpdate'])
-    //             <=> strtotime($b['DeliveryUpdateLastUpdate']);
-
-    //         if ($dateCompare !== 0) {
-    //             return $dateCompare;
-    //         }
-
-    //         return $a['DeliveryUpdateId'] <=> $b['DeliveryUpdateId'];
-    //     })
-    //     ->values();
-    // }
-
     private function mapUploadFileForLongevityParts( array $data, ?string $deviceId = null): array {
+        // Upload files only for classification 2 or 3
+        if (!in_array((int) ($data['device_classification'] ?? 0), [2, 3], true)) {
+            return [
+                'hasError' => 0,
+                'file_name' => null,
+            ];
+        }
+
         $uploadedFiles = [];
         $filesToUpload = [];
-
         $files = $data['longevity_upload_file'] ?? [];
 
         if (empty($files)) {
             return [
                 'hasError' => 0,
-                'file_name' => ''
+                'file_name' => null,
             ];
         }
 
@@ -584,29 +527,18 @@ class DeviceRepository implements DeviceInterface
         foreach ($files as $deviceUploadFile) {
             $originalName = $deviceUploadFile->getClientOriginalName();
             $extension = $deviceUploadFile->getClientOriginalExtension();
-            $filename = pathinfo(
-                $originalName,
-                PATHINFO_FILENAME
-            );
 
-            // Replace spaces with underscores
+            $filename = pathinfo($originalName, PATHINFO_FILENAME);
+
             $filename = preg_replace('/\s+/', '_', $filename);
-
-            // Remove all other special characters
             $filename = preg_replace('/[^a-zA-Z0-9_]/', '', $filename);
-
-            // Replace any consecutive underscores with a single underscore
             $filename = preg_replace('/_+/', '_', $filename);
-
-            // Remove underscores at the beginning and end
             $filename = trim($filename, '_');
 
-            // Prevent empty filenames
             if ($filename === '') {
                 $filename = 'file';
             }
 
-            // Sanitize extension
             $extension = preg_replace('/[^a-zA-Z0-9]/', '', $extension);
 
             $safeFilename = $filename
@@ -619,24 +551,21 @@ class DeviceRepository implements DeviceInterface
                     [$safeFilename]
                 );
 
-            // Exclude current device during update
             if ($deviceId !== null) {
                 $query->where('id', '!=', $deviceId);
             }
 
-            // Check database duplicate
             if ($query->exists()) {
                 return [
                     'hasError' => 2,
-                    'message' => "Filename '{$safeFilename}' already exists."
+                    'message' => "Filename '{$safeFilename}' already exists.",
                 ];
             }
 
-            // Check duplicate filename within current upload
             if (in_array($safeFilename, $uploadedFiles, true)) {
                 return [
                     'hasError' => 2,
-                    'message' => "Filename '{$safeFilename}' is duplicated in the upload."
+                    'message' => "Filename '{$safeFilename}' is duplicated in the upload.",
                 ];
             }
 
@@ -648,16 +577,14 @@ class DeviceRepository implements DeviceInterface
             ];
         }
 
-        if($data['device_classification'] == 2){
-            $path = 'longevity_parts';
-        } elseif($data['device_classification'] == 3){
-            $path = 'yec_approval';
-        }
+        $path = (int) $data['device_classification'] === 2
+            ? 'longevity_parts'
+            : 'yec_approval';
 
         // Upload only after all filenames pass validation
         foreach ($filesToUpload as $fileData) {
             Storage::putFileAs(
-                'public/' . ($path ?? ''),
+                'public/' . $path,
                 $fileData['file'],
                 $fileData['filename']
             );
@@ -665,9 +592,111 @@ class DeviceRepository implements DeviceInterface
 
         return [
             'hasError' => 0,
-            'file_name' => implode(' || ', $uploadedFiles)
+            'file_name' => implode(' || ', $uploadedFiles),
         ];
     }
+
+    // private function mapUploadFileForLongevityParts( array $data, ?string $deviceId = null): array {
+    //     $uploadedFiles = [];
+    //     $filesToUpload = [];
+
+    //     $files = $data['longevity_upload_file'] ?? [];
+
+    //     if (empty($files)) {
+    //         return [
+    //             'hasError' => 0,
+    //             'file_name' => ''
+    //         ];
+    //     }
+
+    //     // First: sanitize and validate all filenames
+    //     foreach ($files as $deviceUploadFile) {
+    //         $originalName = $deviceUploadFile->getClientOriginalName();
+    //         $extension = $deviceUploadFile->getClientOriginalExtension();
+    //         $filename = pathinfo(
+    //             $originalName,
+    //             PATHINFO_FILENAME
+    //         );
+
+    //         // Replace spaces with underscores
+    //         $filename = preg_replace('/\s+/', '_', $filename);
+
+    //         // Remove all other special characters
+    //         $filename = preg_replace('/[^a-zA-Z0-9_]/', '', $filename);
+
+    //         // Replace any consecutive underscores with a single underscore
+    //         $filename = preg_replace('/_+/', '_', $filename);
+
+    //         // Remove underscores at the beginning and end
+    //         $filename = trim($filename, '_');
+
+    //         // Prevent empty filenames
+    //         if ($filename === '') {
+    //             $filename = 'file';
+    //         }
+
+    //         // Sanitize extension
+    //         $extension = preg_replace('/[^a-zA-Z0-9]/', '', $extension);
+
+    //         $safeFilename = $filename
+    //             . ($extension !== '' ? '.' . $extension : '');
+
+    //         // Check duplicate filename in attachment column
+    //         $query = Device::query()
+    //             ->whereRaw(
+    //                 "FIND_IN_SET(?, REPLACE(attachment, ' || ', ',')) > 0",
+    //                 [$safeFilename]
+    //             );
+
+    //         // Exclude current device during update
+    //         if ($deviceId !== null) {
+    //             $query->where('id', '!=', $deviceId);
+    //         }
+
+    //         // Check database duplicate
+    //         if ($query->exists()) {
+    //             return [
+    //                 'hasError' => 2,
+    //                 'message' => "Filename '{$safeFilename}' already exists."
+    //             ];
+    //         }
+
+    //         // Check duplicate filename within current upload
+    //         if (in_array($safeFilename, $uploadedFiles, true)) {
+    //             return [
+    //                 'hasError' => 2,
+    //                 'message' => "Filename '{$safeFilename}' is duplicated in the upload."
+    //             ];
+    //         }
+
+    //         $uploadedFiles[] = $safeFilename;
+
+    //         $filesToUpload[] = [
+    //             'file' => $deviceUploadFile,
+    //             'filename' => $safeFilename,
+    //         ];
+    //     }
+
+    //     if($data['device_classification'] == 2){
+    //         $path = 'longevity_parts';
+    //     } elseif($data['device_classification'] == 3){
+    //         $path = 'yec_approval';
+    //     }
+
+    //     // Upload only after all filenames pass validation
+    //     foreach ($filesToUpload as $fileData) {
+    //         Storage::putFileAs(
+    //             'public/' . ($path ?? ''),
+    //             $fileData['file'],
+    //             $fileData['filename']
+    //         );
+    //     }
+
+    //     return [
+    //         'hasError' => 0,
+    //         'file_name' => implode(' || ', $uploadedFiles)
+    //     ];
+    // }
 
     public function existsDevice(array $conditions, ?string $excludeDeviceId = null): bool{
         $query = Device::where($conditions);
@@ -675,9 +704,9 @@ class DeviceRepository implements DeviceInterface
         // if ($excludeDeviceId) {
         //     $query->where('id',  $excludeDeviceId);
         // }
-
         return $query->exists();
     }
+
     public function newDevice(array $conditions): bool{
         $query = Device::where($conditions);
         return $query->exists();
@@ -767,7 +796,8 @@ class DeviceRepository implements DeviceInterface
         if (!empty($deviceIdsToOne)) {
             $updatedToOne = Device::query()
                 ->whereIn('id', $deviceIdsToOne)
-                ->where('classification', '!=', 2)
+                // ->where('classification', '!=', 2)
+                ->whereNotIn('classification', [2, 4])
                 ->update([
                     'classification' => 1,
                 ]);

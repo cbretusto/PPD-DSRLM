@@ -64,9 +64,13 @@ function GetDeviceInfoByIdToEdit(deviceId){
                 $(`input[name="process_type"][value="${requestDeviceInfo[0].process_type}"]`).prop('checked', true);
 
                 if(requestDeviceInfo[0].attachment){
+                    console.log('1')
+                    $("#fileLongevityUpload").prop('disabled', true);
                     $("#divLongevityFileInput").addClass('d-none');
                     $("#divLongevityTextInput").removeClass('d-none');
                 }else{
+                    console.log('2')
+                    $("#fileLongevityUpload").prop('disabled', false);
                     $("#divLongevityTextInput").addClass('d-none');
                     $("#divLongevityFileInput").removeClass('d-none');
                 }
@@ -431,12 +435,28 @@ function ToggleLongevityFile() {
     );
 
     // Enable/disable file upload
-    $('#fileLongevityUpload')
-        .prop('disabled', !isWaitingForFileUploading)
-        .prop('required', isWaitingForFileUploading);
+    $('#fileLongevityUpload').prop('disabled', !isWaitingForFileUploading).prop('required', isWaitingForFileUploading);
 
-    // Clear file kapag ibang classification ang pinili
     if (!isWaitingForFileUploading) {
         $('#fileLongevityUpload').val('');
     }
+}
+
+function setDeviceView(view) {
+    const isPercentage = view === 'percentage';
+
+    // Toggle percentage summaries
+    $('.percentage-item').toggleClass('d-none', !isPercentage);
+
+    // Toggle classification summaries
+    $('.classification-item').toggleClass('d-none', isPercentage);
+
+    // Update toggle buttons
+    $('#btnPercentageView')
+        .toggleClass('active', isPercentage)
+        .attr('aria-pressed', isPercentage);
+
+    $('#btnClassificationView')
+        .toggleClass('active', !isPercentage)
+        .attr('aria-pressed', !isPercentage);
 }

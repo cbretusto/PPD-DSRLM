@@ -453,7 +453,6 @@
             MOBILE
             ===================================================== */
             @media only screen and (max-width: 600px) {
-
                 .email-wrapper {
                     padding: 15px 0;
                 }

@@ -21,12 +21,16 @@ class DeviceService
         $userLevel = (int) $request->input('user_level', 0);
         $canManageDevice = ($userClassification === 3 || $userLevel === 2);
 
-        $percentageCounts = [
+        $percentageAndClassificationCounts = [
             'count_normal'         => 0,
             'count_70_79'          => 0,
             'count_80_99'          => 0,
             'count_100_up'         => 0,
             'count_reset_approval' => 0,
+            'count_for_longevity_application' => 0,
+            'count_waiting_for_longevity_parts' => 0,
+            'count_for_yec_approval' => 0,
+            'count_ongoing_longevity_application' => 0,
         ];
 
         // Compute percentage and pending status once per device.
@@ -44,7 +48,7 @@ class DeviceService
 
             foreach ($device->device_reset_history_details ?? [] as $history) {
                 if ((int) $history->approval_status === 0) {
-                    $percentageCounts['count_reset_approval']++;
+                    $percentageAndClassificationCounts['count_reset_approval']++;
                     $hasPendingApproval = true;
                 }
             }
@@ -52,13 +56,32 @@ class DeviceService
             $device->has_pending_reset_approval = $hasPendingApproval;
 
             if ($percentage >= 100) {
-                $percentageCounts['count_100_up']++;
+                $percentageAndClassificationCounts['count_100_up']++;
             } elseif ($percentage >= 80) {
-                $percentageCounts['count_80_99']++;
+                $percentageAndClassificationCounts['count_80_99']++;
             } elseif ($percentage >= 70) {
-                $percentageCounts['count_70_79']++;
+                $percentageAndClassificationCounts['count_70_79']++;
             } else {
-                $percentageCounts['count_normal']++;
+                $percentageAndClassificationCounts['count_normal']++;
+            }
+
+             // Device classification counts
+            switch ((int) $device->classification) {
+                case 1:
+                    $percentageAndClassificationCounts['count_for_longevity_application']++;
+                    break;
+
+                case 2:
+                    $percentageAndClassificationCounts['count_waiting_for_longevity_parts']++;
+                    break;
+
+                case 3:
+                    $percentageAndClassificationCounts['count_for_yec_approval']++;
+                    break;
+
+                case 4:
+                    $percentageAndClassificationCounts['count_ongoing_longevity_application']++;
+                    break;
             }
         }
 
@@ -85,6 +108,23 @@ class DeviceService
 
                         case 'reset_approval':
                             return $device->has_pending_reset_approval;
+
+                        // Reset approval filter
+                        case 'reset_approval':
+                            return $device->has_pending_reset_approval;
+
+                        // Classification filters
+                        case 'for_longevity_application':
+                            return (int) $device->classification === 1;
+
+                        case 'waiting_for_longevity_parts':
+                            return (int) $device->classification === 2;
+
+                        case 'for_yec_approval':
+                            return (int) $device->classification === 3;
+
+                        case 'ongoing_longevity_application':
+                    return (int) $device->classification === 4;
 
                         default:
                             return true;
@@ -250,7 +290,7 @@ class DeviceService
             'percentage',
             'attachment'
         ])
-        ->with('percentage_counts', $percentageCounts)
+        ->with('percentage_classification_counts', $percentageAndClassificationCounts)
         ->make(true);
     }
 
@@ -316,64 +356,66 @@ class DeviceService
     }
 
     public function deviceCreateUpdateService( ?string $deviceId, array $data, ?string $userId): array {
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
             $exists = $this->deviceRepo->existsDevice([
                 'id'                => $deviceId,
                 'device_code'       => $data['device_code'],
                 'tool_life'         => $data['tool_life'],
                 'classification'    => $data['device_classification'],
-                'logdel'            => 0,
+                'logdel'            => 0
             ]);
 
             $newData = $this->deviceRepo->newDevice([
-                'device_code' => $data['device_code'],
+                'device_code' => $data['device_code']
             ]);
 
+            // dd($exists, $newData);
             if ($exists == true) {
-                DB::rollBack();
+                // dd('1');
+                // DB::rollBack();
 
                 return [
-                    'hasError' => 1,
-                    'message' => 'Device Code already exists.'
+                    'hasError'  => 1,
+                    'message'   => 'Device Code already exists.'
                 ];
             }
 
             if ($deviceId === null && $newData == true) {
-                DB::rollBack();
+                // dd('2');
+                // DB::rollBack();
 
                 return [
-                    'hasError' => 1,
-                    'message' => 'Device Code already exists.'
+                    'hasError'  => 1,
+                    'message'   => 'Device Code already exists.'
                 ];
             }
 
             $data['user_id'] = $userId;
 
-            $result = $this->deviceRepo
-                ->deviceCreateUpdateRepository($deviceId, $data);
+            $result = $this->deviceRepo->deviceCreateUpdateRepository($deviceId, $data);
 
             if (($result['hasError'] ?? 0) == 2) {
-                DB::rollBack();
+                // DB::rollBack();
 
                 return [
-                    'hasError' => 2,
-                    'message' => $result['message'] ?? 'Filename already exists.'
+                    'hasError'  => 2,
+                    'message'   => $result['message'] ?? 'Filename already exists.'
                 ];
             }
 
-            DB::commit();
+            // DB::commit();
 
             return ['hasError' => 0];
 
-        } catch (\Exception $e) {
-            DB::rollBack();
+        // } catch (\Exception $e) {
+            // DB::rollBack();
 
-            return [
-                'hasError' => 1,
-                'exceptionError' => $e->getMessage()
-            ];
-        }
+        //     return [
+        //         'hasError' => 1,
+        //         'exceptionError' => $e->getMessage()
+        //     ];
+        // }
     }
 
     public function getDeviceInfoByIdService($deviceId){
@@ -402,8 +444,7 @@ class DeviceService
         DB::beginTransaction();
 
         try {
-            $updatedCount = $this->deviceRepo
-                ->updateClassificationRepository();
+            $updatedCount = $this->deviceRepo->updateClassificationRepository();
 
             DB::commit();
             return [
@@ -545,9 +586,7 @@ class DeviceService
 
         try {
             $data['user_id'] = $userId;
-
-            $result = $this->deviceRepo
-                ->deviceResetToolLifeRepository($data);
+            $result = $this->deviceRepo->deviceResetToolLifeRepository($data);
 
             // Duplicate filename
             if (($result['hasError'] ?? 0) == 2) {
