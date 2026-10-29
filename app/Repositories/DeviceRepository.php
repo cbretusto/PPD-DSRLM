@@ -571,7 +571,7 @@ class DeviceRepository implements DeviceInterface
         $uploadedFiles = [];
         $filesToUpload = [];
 
-        $files = $data['longevity_parts_upload_file'] ?? [];
+        $files = $data['longevity_upload_file'] ?? [];
 
         if (empty($files)) {
             return [
@@ -648,10 +648,16 @@ class DeviceRepository implements DeviceInterface
             ];
         }
 
+        if($data['device_classification'] == 2){
+            $path = 'longevity_parts';
+        } elseif($data['device_classification'] == 3){
+            $path = 'yec_approval';
+        }
+
         // Upload only after all filenames pass validation
         foreach ($filesToUpload as $fileData) {
             Storage::putFileAs(
-                'public/longevity_parts',
+                'public/' . ($path ?? ''),
                 $fileData['file'],
                 $fileData['filename']
             );
@@ -1116,9 +1122,13 @@ class DeviceRepository implements DeviceInterface
         return response()->download($path);
     }
 
-    public function deviceDownloadFileRepository(string $filename){
-        $folder = 'longevity_parts';
-        $path = storage_path("app/public/$folder/" . $filename);
+
+    public function deviceDownloadFileRepository( string $filename, string $classification ) {
+        $folder = $classification === '3'
+            ? 'yec_approval'
+            : 'longevity_parts';
+
+        $path = storage_path("app/public/{$folder}/{$filename}");
 
         if (!file_exists($path)) {
             abort(404, 'File not found');

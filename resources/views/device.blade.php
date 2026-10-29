@@ -640,7 +640,7 @@
                             <!-- Classification File Upload -->
                             <div class="mb-3 d-none" id="divLongevityFile">
                                 <label for="fileLongevityUpload" class="form-label fw-semibold">
-                                    Upload Longevity File
+                                    Upload File
                                 </label>
 
                                 <div class="input-group input-group-lg" id="divLongevityFileInput">
@@ -648,18 +648,18 @@
                                         <i class="fas fa-file-upload"></i>
                                     </span>
 
-                                    <input type="file" id="fileLongevityUpload" name="longevity_parts_upload_file[]" class="form-control bg-light border-start-0" accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png" multiple>
+                                    <input type="file" id="fileLongevityUpload" name="longevity_upload_file[]" class="form-control bg-light border-start-0" accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png" multiple>
                                 </div>
 
                                 <div class="input-group input-group-lg d-none" id="divLongevityTextInput">
                                     <button type="button" class="btn btn-sm btn-outline-dark" id="btnReuploadLongevityFile">
                                         <i class="fa fa-file"></i> Click here to re-upload the file
                                     </button>
-                                    <input type="text" id="textLongevityUpload" name="longevity_parts_upload_file" class="form-control bg-light border-start-0" readonly>
+                                    <input type="text" id="textLongevityUpload" name="longevity_upload_file" class="form-control bg-light border-start-0" readonly>
                                 </div>
 
                                 <small class="text-muted">
-                                    Upload the required longevity document.
+                                    Upload the required document.
                                     Accepted formats: PDF, Excel, Word, JPG, PNG.
                                 </small>
                             </div>
@@ -1521,7 +1521,7 @@
         $(document).ready(function () {
             resetModalFormValues();
             UserManagementGetApproveBy($('.get-ppd_dsrlm-user-approve_by'));
-            toggleLongevityFile();
+            ToggleLongevityFile();
             // GetRemark($('.get-remark'));
 
             $('.select2bs5').each(function () {
@@ -1981,7 +1981,7 @@
 
             $('#slctDeviceClassification').on('change', function () {
                 console.log('Device classification changed to');
-                toggleLongevityFile();
+                ToggleLongevityFile();
             });
 
         });

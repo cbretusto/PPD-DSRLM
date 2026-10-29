@@ -421,22 +421,22 @@ function UpdateClassification(classification, csrfToken){
     ajaxRequest(ajaxUpdateClassification);
 }
 
-function toggleLongevityFile() {
+function ToggleLongevityFile() {
     const classification = $('#slctDeviceClassification').val();
-    const isWaitingForLongevity = classification === '2';
+    const isWaitingForFileUploading = ['2', '3'].includes(classification);
 
     $('#divLongevityFile').toggleClass(
         'd-none',
-        !isWaitingForLongevity
+        !isWaitingForFileUploading
     );
 
     // Enable/disable file upload
     $('#fileLongevityUpload')
-        .prop('disabled', !isWaitingForLongevity)
-        .prop('required', isWaitingForLongevity);
+        .prop('disabled', !isWaitingForFileUploading)
+        .prop('required', isWaitingForFileUploading);
 
     // Clear file kapag ibang classification ang pinili
-    if (!isWaitingForLongevity) {
+    if (!isWaitingForFileUploading) {
         $('#fileLongevityUpload').val('');
     }
 }

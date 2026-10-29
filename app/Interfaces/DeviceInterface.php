@@ -17,7 +17,7 @@ interface DeviceInterface
     public function getPpdDsrlmUserApproveByRepository();
     public function getAllDeviceResetData($request);
     public function downloadFileRepository(string $filename);
-    public function deviceDownloadFileRepository(string $filename);
+    public function deviceDownloadFileRepository(string $filename, string $classification);
 
     public function getDeviceHistoryByDateRepository($request);
 

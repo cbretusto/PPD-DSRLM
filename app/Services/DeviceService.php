@@ -232,12 +232,11 @@ class DeviceService
 
                 if (!empty($file)) {
                     $url = route('device_download_file', [
-                        'filename' => $file
+                        'filename' => $file,
+                        'classification' => $deviceDetail->classification,
                     ]);
 
-                    $result .= "<a href='{$url}' title='{$file}' target='_blank'>"
-                        . e($file)
-                        . "</a><br>";
+                    $result .= "<a href='{$url}' title='{$file}' target='_blank'>" . e($file) . "</a><br>";
                 }
             }
 
@@ -794,8 +793,8 @@ class DeviceService
         return $this->deviceRepo->downloadFileRepository($filename);
     }
 
-    public function deviceDownloadFileService(string $filename){
-        return $this->deviceRepo->deviceDownloadFileRepository($filename);
+    public function deviceDownloadFileService(string $filename, string $classification){
+        return $this->deviceRepo->deviceDownloadFileRepository($filename, $classification);
     }
 
     public function getPpdDsrlmUserApproveByService(){

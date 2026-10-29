@@ -35,7 +35,7 @@ class DeviceController extends Controller
         $rapidxUserId = $_SESSION['rapidx_user_id'];
 
         $deviceId = $request->input('device_id');
-        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'device_classification', 'longevity_parts_upload_file', 'process_type']);
+        $data = $request->only(['device_code', 'device_name', 'tool_life', 'yec_sales_qty', 'pmi_sales_qty', 'device_classification', 'longevity_upload_file', 'process_type']);
         $userId = $rapidxUserId;
 
         $response = $this->deviceService->deviceCreateUpdateService($deviceId, $data, $userId);
@@ -120,8 +120,8 @@ class DeviceController extends Controller
         return $this->deviceService->downloadFileService($filename);
     }
 
-    public function deviceDownloadFile($filename){
-        return $this->deviceService->deviceDownloadFileService($filename);
+    public function deviceDownloadFile($filename, $classification){
+        return $this->deviceService->deviceDownloadFileService($filename, $classification);
     }
 
 
