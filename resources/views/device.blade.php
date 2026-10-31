@@ -828,11 +828,31 @@
 
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
-                                    <div class="department-select">
-                                        <label for="processFilter" class="visually-hidden">
-                                            Select Department
-                                        </label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-gears fa-spin text-dark"></i>
+                                        <div class="department-select">
+                                            <i class="fas fa-building"></i>
+                                            <select id="processFilter" class="form-select">
+                                                <option value="" selected disabled>-- Select Department --</option>
+                                                <option value="0">PPD CN</option>
+                                                <option value="1">PPD TS</option>
+                                                <option value="2">Stamping</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
+                                    @if($userClassification == 3 || $userLevel == 2)
+                                        <button type="button" class="btn btn-dark load-table device-action-btn"
+                                            id="buttonAddDevice"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDeviceCreateUpdate">
+                                            <i class="fas fa-plus me-2"></i>
+                                            New Data
+                                        </button>
+                                    @endif
+                                </div>
+                                {{-- <div class="d-flex justify-content-between mb-3">
+                                    <div class="department-select">
                                         <i class="fas fa-building"></i>
                                         <select id="processFilter" class="form-select">
                                             <option value="" selected disabled>-- Select Department --</option>
@@ -848,7 +868,7 @@
                                         New Data
                                     </button>
                                     @endif
-                                </div>
+                                </div> --}}
 
                                 <div class="table-responsive">
                                     <table id="tableDevice" class="table table-bordered table-hover nowrap w-100">

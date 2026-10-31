@@ -15,7 +15,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('email:percentage')
+            ->dailyAt('06:00')
+            ->timezone('Asia/Manila')
+            ->withoutOverlapping();
     }
 
     /**
