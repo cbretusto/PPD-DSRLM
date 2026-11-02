@@ -61,16 +61,16 @@ class SendPercentageEmail extends Command
                         continue;
                     }
 
-                    $from = Carbon::parse($history->from)->toDateString();
-                    $to = Carbon::parse($history->to)->toDateString();
+                    $from   = Carbon::parse($history->from)->toDateString();
+                    $to     = Carbon::parse($history->to)->toDateString();
 
                     if ($from > $to) {
                         continue;
                     }
 
                     $ranges[] = [
-                        'from' => $from,
-                        'to' => $to,
+                        'from'  => $from,
+                        'to'    => $to,
                     ];
                 }
 
@@ -90,13 +90,8 @@ class SendPercentageEmail extends Command
                         continue;
                     }
 
-                    $lastTo = Carbon::parse(
-                        $merged[$lastIndex]['to']
-                    );
-
-                    $nextFrom = Carbon::parse(
-                        $range['from']
-                    );
+                    $lastTo     = Carbon::parse($merged[$lastIndex]['to']);
+                    $nextFrom   = Carbon::parse($range['from']);
 
                     if ($nextFrom->lte($lastTo->copy()->addDay())) {
                         if ($range['to'] > $merged[$lastIndex]['to']) {
@@ -111,8 +106,8 @@ class SendPercentageEmail extends Command
                 $resetRangesByDevice[$device->device_code] = $merged;
 
                 Log::info('Reset history prepared.', [
-                    'device_code' => $device->device_code,
-                    'reset_ranges' => $merged,
+                    'device_code'   => $device->device_code,
+                    'reset_ranges'  => $merged,
                 ]);
             }
 
@@ -173,7 +168,6 @@ class SendPercentageEmail extends Command
                             foreach ($resetRangesByDevice[$deviceCode] as $range) {
                                 $from = $range['from'] . ' 00:00:00';
 
-                                // Exclusive upper boundary.
                                 // Excludes the entire reset end date.
                                 $toExclusive = Carbon::parse(
                                     $range['to']
@@ -231,25 +225,19 @@ class SendPercentageEmail extends Command
                 // TARGET SO SOURCE
                 $targetSO = $device->tool_life;
 
-                if (
-                    $targetSO === null ||
-                    $targetSO === '' ||
-                    !is_numeric($targetSO) ||
-                    $targetSO <= 0
-                ) {
-
+                if ($targetSO === null || $targetSO === '' || !is_numeric($targetSO) || $targetSO <= 0) {
                     Log::warning('Invalid target SO.', [
-                        'device_code' => $device->device_code,
-                        'target_so' => $targetSO,
+                        'device_code'   => $device->device_code,
+                        'target_so'     => $targetSO,
                     ]);
 
                     continue;
                 }
 
-                $percentage = round(($actualSO / $targetSO) * 100,2);
-                $device->total_actual_so = $actualSO;
-                $device->target_so_value = $targetSO;
-                $device->percentage = $percentage;
+                $percentage                 = round(($actualSO / $targetSO) * 100,2);
+                $device->total_actual_so    = $actualSO;
+                $device->target_so_value    = $targetSO;
+                $device->percentage         = $percentage;
 
                 // STEP 11: GROUP DEVICES
                 if ($percentage >= 70 && $percentage < 90) {
@@ -262,17 +250,9 @@ class SendPercentageEmail extends Command
             }
 
             // STEP 12: SORT DESCENDING PER PERCENTAGE
-            $group70 = $group70
-                ->sortByDesc('percentage')
-                ->values();
-
-            $group90 = $group90
-                ->sortByDesc('percentage')
-                ->values();
-
-            $group100 = $group100
-                ->sortByDesc('percentage')
-                ->values();
+            $group70    = $group70->sortByDesc('percentage')->values();
+            $group90    = $group90->sortByDesc('percentage')->values();
+            $group100   = $group100->sortByDesc('percentage')->values();
 
             // STEP 13: SEND EMAIL 70%-89.99%
             if ($group70->isNotEmpty()) {
@@ -314,8 +294,8 @@ class SendPercentageEmail extends Command
         } catch (\Throwable $e) {
             Log::error('Percentage cron job failed.', [
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
             ]);
 
             $this->error($e->getMessage());
@@ -336,14 +316,15 @@ class SendPercentageEmail extends Command
                 return;
             }
 
-            Mail::to($recipientEmails)->send(
+            Mail::to($recipientEmails)->bcc('cbretusto@pricon.ph')->send(
                 new $mailableClass($devices)
             );
 
             Log::info('Consolidated percentage email sent.', [
-                'email_type' => $emailType,
-                'device_count' => $devices->count(),
-                'recipients' => $recipientEmails,
+                'email_type'    => $emailType,
+                'device_count'  => $devices->count(),
+                'recipients'    => $recipientEmails,
+                'bcc'           => 'cbretusto@pricon.ph',
 
                 'sent_at' => now()
                     ->timezone('Asia/Manila')
