@@ -70,7 +70,6 @@
                                             </strong>
                                         </td>
                                     </tr>
-
                                 </table>
 
                                 <br>

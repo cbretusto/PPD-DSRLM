@@ -21,6 +21,10 @@ class DeviceRepository implements DeviceInterface
         $devices = Device::query()
             ->with('device_reset_history_details')
             ->where('process_type', $processType)
+            ->where(function ($query) {
+                    $query->where('remark_status', 'NOT LIKE', '%delete%')
+                        ->orWhereNull('remark_status');
+                })
             ->where('logdel', 0)
             ->get();
 

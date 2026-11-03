@@ -710,11 +710,11 @@
                         "searchable": true,
                         "render": function (data, type, row) {
                             switch (row.classification) {
-                                case '1':
+                                case 1:
                                     return "Approve By";
-                                case '2':
+                                case 2:
                                     return "Reset By";
-                                case '3':
+                                case 3:
                                     return "Registered By";
                                 default:
                                     return "Unknown";
