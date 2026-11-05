@@ -36,7 +36,7 @@ class UserManagementRequest extends FormRequest{
         if ($action === 'createUserClassification') {
             return [
                 'user_id'             => 'required',
-                'user_classification' => 'required|in:1,2',
+                'user_classification' => 'required|in:1,2,3',
             ];
         }
 

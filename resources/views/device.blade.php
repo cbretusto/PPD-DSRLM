@@ -1091,8 +1091,8 @@
                                 </div>
 
                                 <small class="text-muted">
-                                    Upload the required document.
-                                    Accepted formats: PDF, Excel, Word, JPG, PNG.
+                                    {{-- Upload the required document. --}}
+                                    <span id="labelUploadFile"></span>
                                 </small>
                             </div>
                         </div>
@@ -1717,7 +1717,7 @@
                                         Supporting File
                                     </div>
                                     <div class="text-muted small">
-                                        Attach the invoice and longevity application.
+                                        Attach the Longevity Parts Invoice Copy.
                                     </div>
                                 </div>
                             </div>
@@ -2391,6 +2391,14 @@
 
             $('#slctDeviceClassification').on('change', function () {
                 console.log('Device classification changed to');
+
+                if($(this).val() == 2){
+                    $('#labelUploadFile').text('Upload / Attach the PMI approved Longevity Application.')
+                }
+
+                if($(this).val() == 3){
+                    $('#labelUploadFile').text('Upload / Attach the YEC approved Longevity Application.')
+                }
                 ToggleLongevityFile();
             });
 

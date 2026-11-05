@@ -18,7 +18,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('email:percentage')
             ->dailyAt('06:00')
             ->timezone('Asia/Manila')
-            ->withoutOverlapping();
+            ->withoutOverlapping(60)
+            ->onOneServer();
     }
 
     /**

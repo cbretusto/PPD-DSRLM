@@ -709,6 +709,8 @@
                         "orderable": true,
                         "searchable": true,
                         "render": function (data, type, row) {
+                            console.log('row: ', row);
+
                             switch (row.classification) {
                                 case 1:
                                     return "Approve By";
@@ -717,7 +719,7 @@
                                 case 3:
                                     return "Registered By";
                                 default:
-                                    return "Unknown";
+                                    return "N/A";
                             }
                         },
                     }
