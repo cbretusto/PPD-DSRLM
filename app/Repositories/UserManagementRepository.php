@@ -23,7 +23,7 @@ class UserManagementRepository implements UserManagementInterface{
             'user_management_systemone_department_info',
             'user_management_systemone_position_info'
         ])
-        // ->whereNotIn('position', [101, 102, 103])
+        ->whereNotIn('position', [101, 102, 103])
         ->where('logdel', 0)
         ->get();
     }
@@ -116,7 +116,7 @@ class UserManagementRepository implements UserManagementInterface{
             'user_management_rapidx_user_info',
             'user_management_systemone_department_info'
         ])
-        // ->whereNotIn('position', [101, 102, 103])
+        ->whereNotIn('position', [101, 102, 103])
         ->where('status', 0)
         ->where('logdel', 0)
         ->get();
