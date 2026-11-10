@@ -37,7 +37,7 @@
                 </li>
                 <br>
                 <li class="nav-header">
-                    <strong>SYSTEM NAME</strong>
+                    <strong>Modules</strong>
                 </li>
 
                 @if($userLevel == 2)

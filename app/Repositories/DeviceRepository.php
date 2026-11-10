@@ -687,7 +687,11 @@ class DeviceRepository implements DeviceInterface
     }
 
     public function getPpdDsrlmUserApproveByRepository(){
-        return UserManagement::with('user_management_rapidx_user_info')->where('classification', 1)->where('status', 0)->where('logdel', 0)->get();
+        return UserManagement::with('user_management_rapidx_user_info')
+            ->where('classification', 1)
+            ->where('status', 0)
+            ->where('logdel', 0)
+            ->get();
     }
 
     // =============================================================================
@@ -886,7 +890,12 @@ class DeviceRepository implements DeviceInterface
     }
 
     public function getAllDeviceResetData($request){
-        return DeviceResetHistory::with('reset_by_rapidx_user_info', 'approve_by_rapidx_user_info')->where('device_code', $request->deviceCode)->where('status', 0)->where('logdel', 0)->orderBy('from', 'desc')->get();
+        return DeviceResetHistory::with('reset_by_rapidx_user_info', 'approve_by_rapidx_user_info')
+            ->where('device_code', $request->deviceCode)
+            ->where('status', 0)
+            ->where('logdel', 0)
+            ->orderBy('from', 'desc')
+            ->get();
     }
 
     public function downloadFileRepository(string $filename){
