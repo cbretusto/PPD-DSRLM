@@ -59,7 +59,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('remark') }}" class="nav-link">
+                        <a href="{{ route('setting') }}" class="nav-link">
                             <i class="nav-icon fa-solid fa-gears"></i>
                             <span>Setting</span>
                         </a>

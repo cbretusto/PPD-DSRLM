@@ -3,7 +3,7 @@
     $layout = 'layouts.layout';
 @endphp
 @extends($layout)
-@section('title', 'Remark')
+@section('title', 'Setting')
 @section('content_page')
     <style type="text/css">
         table.table thead th{
@@ -31,29 +31,89 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card">
-                            <div class="card-header d-flex align-items-center">
-                                <i class="fas fa-comment-dots me-1"></i>
-                                <h3 class="card-title mb-0">Remark</h3>
-                            </div>
-
                             <div class="card-body">
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-dark" id="buttonAddRemark" data-bs-toggle="modal" data-bs-target="#modalRemarkCreateUpdate">
-                                        <i class="fa fa-plus fa-md"></i> New Data
-                                    </button>
-                                </div>
-                                <div class="table-responsive">
-                                    <table id="tableRemark" class="table table-bordered table-hover nowrap" style="width: 100%;">
-                                        <thead>
-                                            <tr>
-                                                <th>Action</th>
-                                                <th>Status</th>
-                                                <th>Remark</th>
-                                                <th>Remark Type</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
-                                </div>
+                                <!-- Tabs -->
+                                <ul class="nav nav-tabs" id="remarkTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active"
+                                                id="remark-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#remarkContent"
+                                                type="button"
+                                                role="tab">
+                                            <i class="fas fa-comment-dots me-1"></i>
+                                            Remark
+                                        </button>
+                                    </li>
+
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link"
+                                                id="email-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#emailContent"
+                                                type="button"
+                                                role="tab">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            Email Recipients
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <!-- Tab Content -->
+                                <div class="tab-content pt-3">
+                                    <!-- REMARK TAB -->
+                                    <div class="tab-pane fade show active" id="remarkContent" role="tabpanel">
+                                        <div class="d-flex justify-content-end mb-3">
+                                            <button type="button"
+                                                    class="btn btn-dark"
+                                                    id="buttonAddRemark"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalRemarkCreateUpdate">
+                                                <i class="fa fa-plus"></i>
+                                                New Data
+                                            </button>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table id="tableRemark" class="table table-bordered table-hover nowrap" style="width: 100%;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Status</th>
+                                                        <th>Remark</th>
+                                                        <th>Remark Type</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- EMAIL RECIPIENTS TAB -->
+                                    <div class="tab-pane fade" id="emailContent" role="tabpanel">
+                                        <div class="d-flex justify-content-end mb-3">
+                                            <button type="button"
+                                                    class="btn btn-dark"
+                                                    id="buttonAddEmail"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalEmailCreateUpdate">
+                                                <i class="fa fa-plus"></i>
+                                                New Data
+                                            </button>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table id="tableEmailRecipients" class="table table-bordered table-hover nowrap" style="width: 100%;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Status</th>
+                                                        <th>Email</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div><!-- End Tab Content -->
                             </div>
                         </div>
                     </div>
@@ -62,6 +122,9 @@
         </section>
     </div>
 
+    <!-------------------------------------------------------------------------------------------------------->
+    <!---------------------------------------------- REMARK TAB ---------------------------------------------->
+    <!-------------------------------------------------------------------------------------------------------->
     <!-- Remark Modal Start -->
     <div class="modal fade" id="modalRemarkCreateUpdate" data-bs-keyboard="false" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -209,6 +272,11 @@
         </div>
     </div>
     <!-- Remark Status Modal End -->
+
+    <!------------------------------------------------------------------------------------------------------------------>
+    <!---------------------------------------------- EMAIL RECIPIENTS TAB ---------------------------------------------->
+    <!------------------------------------------------------------------------------------------------------------------>
+
 @endsection
 
 <!-- JS CONTENT --}} -->
@@ -225,6 +293,9 @@
                 dropdownParent: $(this).closest('.modal')
             })
 
+            // ======================================================================================================================
+            // ======================================================= REMARK =======================================================
+            // ======================================================================================================================
             dataTableMarkup = $("#tableRemark").DataTable({
                 "processing" : false,
                 "serverSide" : true,
@@ -278,12 +349,10 @@
                 if(remarkStatus == 0){
                     $("#lblRemarkChangeStatusLabel").text('Are you sure to activate?');
                     $("#h4RemarkChangeStatusTitle").html('Activate Remark');
-                    // $("#h4RemarkChangeStatusTitle").html('<i class="fa-solid fa-book-bookmark"></i> Activate Remark');
                 }
                 else{
                     $("#lblRemarkChangeStatusLabel").text('Are you sure to deactivate?');
                     $("#h4RemarkChangeStatusTitle").html('Deactivate Remark');
-                    // $("#h4RemarkChangeStatusTitle").html('<i class="fa-solid fa-book-bookmark"></i> Deactivate Remark');
                 }
             });
 
@@ -291,6 +360,11 @@
                 event.preventDefault();
                 RemarkChangeStatus();
             });
+
+            // ======================================================================================================================
+            // ================================================== EMAIL RECIPIENTS ==================================================
+            // ======================================================================================================================
+
         });
     </script>
 @endsection

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\EmailRecipientsController;
 
 Route::get('/', function () {
     return view('device');
@@ -26,9 +27,9 @@ Route::get('/user_management', function () {
     return view('user_management');
 })->name('user_management');
 
-Route::get('/remark', function () {
-    return view('remark');
-})->name('remark');
+Route::get('/setting', function () {
+    return view('setting');
+})->name('setting');
 
 Route::get('/device', function () {
     return view('device');
@@ -56,6 +57,13 @@ Route::controller(RemarkController::class)->group(function () {
     Route::post('/remark_create_update', 'remarkCreateUpdate')->name('remark_create_update');
     Route::get('/get_remark_info_by_id', 'getRemarkInfoById')->name('get_remark_info_by_id');
     Route::post('/change_remark_status', 'changeRemarkStatus')->name('change_remark_status');
+});
+
+Route::controller(EmailRecipientsController::class)->group(function () {
+    Route::get('/view_email_recipients', 'viewEmailRecipients')->name('view_email_recipients');
+    Route::post('/email_recipients_create_update', 'emailRecipientsCreateUpdate')->name('email_recipients_create_update');
+    Route::get('/get_email_recipients_info_by_id', 'getEmailRecipientsInfoById')->name('get_email_recipients_info_by_id');
+    Route::post('/change_email_recipients_status', 'changeEmailRecipientsStatus')->name('change_email_recipients_status');
 });
 
 Route::controller(DeviceController::class)->group(function () {

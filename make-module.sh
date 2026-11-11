@@ -16,6 +16,7 @@ MODEL_PATH="app/${MODEL_NAME}.php"
 if [ ! -f "$MODEL_PATH" ]; then
     echo "⚠️ Model '$MODEL_NAME' does not exist in app/Models."
     echo "📦 Creating model automatically..."
+    # php artisan make:model $MODEL_NAME -m
     php artisan make:model $MODEL_NAME
     echo "✅ Model '$MODEL_NAME' created."
 else

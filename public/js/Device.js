@@ -269,47 +269,6 @@ function DeviceToolLifeReset() {
     ajaxRequest(ajaxDeviceResetToolLife);
 }
 
-// function DeviceToolLifeReset() {
-//     const form = $('#deviceResetForm')[0];
-//     const formData = new FormData(form);
-
-//     const ajaxDeviceResetToolLife = {
-//         url: "device_reset_tool_life",
-//         method: "POST",
-//         data: formData,
-//         processData: false,
-//         contentType: false,
-//         dataType: "json",
-//         beforeSendCallback: function(xhr) {
-//             $("#iBtnDeviceResetIcon").addClass('spinner-border spinner-border-sm');
-//             $("#btnDeviceReset").addClass('disabled');
-//             $("#iBtnDeviceResetIcon").removeClass('fa fa-check');
-//         },
-//         successCallback: (response) => {
-//             if (response['validationHasError'] == 1) {
-//                 toastr.error('Saving failed!');
-//             }else if(response['hasError'] == 0) {
-//                 $('#deviceResetModal').modal('hide');
-//                 toastr.success('Successfully saved!');
-//                 dataTableDeviceResetHistory.draw();
-//             }
-//             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
-//             $("#btnDeviceReset").removeClass('disabled');
-//             $("#iBtnDeviceResetIcon").addClass('fa fa-check');
-//         },
-//         errorCallback: (xhr) => {
-//             toastr.error('Saving device failed!');
-//             handleValidatorErrors(xhr.responseJSON.errors);
-
-//             $("#iBtnDeviceResetIcon").removeClass('spinner-border spinner-border-sm');
-//             $("#btnDeviceReset").removeClass('disabled');
-//             $("#iBtnDeviceResetIcon").addClass('fa fa-check');
-//         }
-//     };
-
-//     ajaxRequest(ajaxDeviceResetToolLife);
-// }
-
 const UserManagementGetApproveBy = (element) => {
     let result = '';
     const ajaxGetSystemOneDepartment = {

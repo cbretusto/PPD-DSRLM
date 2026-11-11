@@ -45,3 +45,4 @@
 <script src="@php echo asset("public/js/UserManagement.js?".date("YmdHis")) @endphp"></script>
 <script src="@php echo asset("public/js/Remark.js?".date("YmdHis")) @endphp"></script>
 <script src="@php echo asset("public/js/Device.js?".date("YmdHis")) @endphp"></script>
+<script src="@php echo asset("public/js/EmailRecipients.js?".date("YmdHis")) @endphp"></script>

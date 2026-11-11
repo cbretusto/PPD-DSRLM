@@ -14,20 +14,15 @@ use App\Mail\PercentageEmail70;
 use App\Mail\PercentageEmail90;
 use App\Mail\PercentageEmail100;
 
-class SendPercentageEmail extends Command
-{
+class SendPercentageEmail extends Command{
     protected $signature = 'email:percentage';
-
     protected $description = 'Send daily consolidated device percentage emails';
 
-    public function handle()
-    {
+    public function handle(){
         $today = now('Asia/Manila')->toDateString();
-
         $lockKey = 'email_percentage_daily_' . $today;
 
         // STEP 1: PREVENT DUPLICATE EXECUTION
-
         if (Cache::has($lockKey)) {
             $this->info('Percentage emails already processed today.');
 
@@ -51,7 +46,6 @@ class SendPercentageEmail extends Command
         }
 
         try {
-
             Log::info('Percentage cron execution started.', [
                 'date' => $today,
                 'server' => gethostname(),
@@ -59,13 +53,11 @@ class SendPercentageEmail extends Command
             ]);
 
             // STEP 2: EMAIL RECIPIENTS
-
             $recipientEmails = [
                 'hddeguzman@pricon.ph',
             ];
 
             // STEP 3: GET DEVICES WITH RESET HISTORY
-
             $devices = Device::query()
                 ->with('device_reset_history_details')
                 ->where('status', 0)
@@ -79,7 +71,6 @@ class SendPercentageEmail extends Command
             }
 
             // STEP 4: GET UNIQUE DEVICE CODES
-
             $deviceCodes = $devices
                 ->pluck('device_code')
                 ->filter()
@@ -93,15 +84,11 @@ class SendPercentageEmail extends Command
             }
 
             // STEP 5: PREPARE RESET DATE RANGES
-
             $resetRangesByDevice = [];
-
             foreach ($devices as $device) {
-
                 $ranges = [];
 
                 foreach ($device->device_reset_history_details ?? collect() as $history) {
-
                     if (empty($history->from) || empty($history->to)) {
                         continue;
                     }
@@ -124,11 +111,8 @@ class SendPercentageEmail extends Command
                 });
 
                 // Merge overlapping and consecutive ranges.
-
                 $merged = [];
-
                 foreach ($ranges as $range) {
-
                     $lastIndex = count($merged) - 1;
 
                     if ($lastIndex < 0) {
@@ -140,7 +124,6 @@ class SendPercentageEmail extends Command
                     $nextFrom = Carbon::parse($range['from']);
 
                     if ($nextFrom->lte($lastTo->copy()->addDay())) {
-
                         if ($range['to'] > $merged[$lastIndex]['to']) {
                             $merged[$lastIndex]['to'] = $range['to'];
                         }
@@ -159,7 +142,6 @@ class SendPercentageEmail extends Command
             }
 
             // STEP 6: SEPARATE DEVICES WITH/WITHOUT RESET HISTORY
-
             $devicesWithReset = collect($resetRangesByDevice)
                 ->filter(function ($ranges) {
                     return !empty($ranges);
@@ -171,7 +153,6 @@ class SendPercentageEmail extends Command
                 ->values();
 
             // STEP 7: BUILD ACTUAL SO QUERY
-
             $query = DB::connection('mysql_rapid_ppd')
                 ->table('tbl_dieset as ds')
                 ->join(
@@ -193,9 +174,7 @@ class SendPercentageEmail extends Command
                 ->whereIn('ds.R3Code', $deviceCodes);
 
             // STEP 8: PER-DEVICE RESET DATE FILTERING
-
             if ($devicesWithReset->isNotEmpty()) {
-
                 $query->where(function ($outer) use (
                     $devicesWithoutReset,
                     $devicesWithReset,
@@ -203,7 +182,6 @@ class SendPercentageEmail extends Command
                 ) {
 
                     if ($devicesWithoutReset->isNotEmpty()) {
-
                         $outer->whereIn(
                             'ds.R3Code',
                             $devicesWithoutReset
@@ -211,7 +189,6 @@ class SendPercentageEmail extends Command
                     }
 
                     foreach ($devicesWithReset as $deviceCode) {
-
                         $outer->orWhere(function ($deviceQuery) use (
                             $deviceCode,
                             $resetRangesByDevice
@@ -220,9 +197,7 @@ class SendPercentageEmail extends Command
                             $deviceQuery->where('ds.R3Code', $deviceCode);
 
                             foreach ($resetRangesByDevice[$deviceCode] as $range) {
-
                                 $from = $range['from'] . ' 00:00:00';
-
                                 $toExclusive = Carbon::parse($range['to'])
                                     ->addDay()
                                     ->toDateString() . ' 00:00:00';
@@ -239,18 +214,14 @@ class SendPercentageEmail extends Command
                                             '>=',
                                             $toExclusive
                                         );
-
                                 });
                             }
-
                         });
                     }
-
                 });
             }
 
             // STEP 9: SUM ACTUAL SO
-
             $actualSos = $query
                 ->select(
                     'ds.R3Code',
@@ -260,9 +231,7 @@ class SendPercentageEmail extends Command
                 ->pluck('total_actual_so', 'R3Code');
 
             // STEP 10: ATTACH ACTUAL SO
-
             $devices->each(function ($device) use ($actualSos) {
-
                 $device->total_actual_so = $actualSos->get(
                     $device->device_code,
                     0
@@ -277,11 +246,8 @@ class SendPercentageEmail extends Command
             $group100 = collect();
 
             // STEP 12: CALCULATE PERCENTAGE
-
             foreach ($devices as $device) {
-
                 $actualSO = $device->total_actual_so;
-
                 $targetSO = $device->tool_life;
 
                 if (
@@ -300,40 +266,28 @@ class SendPercentageEmail extends Command
                 }
 
                 $percentage = round(($actualSO / $targetSO) * 100, 2);
-
                 $device->total_actual_so = $actualSO;
                 $device->target_so_value = $targetSO;
                 $device->percentage = $percentage;
 
                 if ($percentage >= 70 && $percentage < 90) {
-
                     $group70->push($device);
-
                 } elseif ($percentage >= 90 && $percentage < 100) {
-
                     $group90->push($device);
-
                 } elseif ($percentage >= 100) {
-
                     $group100->push($device);
-
                 }
             }
 
             // STEP 13: SORT DESCENDING
-
             $group70 = $group70->sortByDesc('percentage')->values();
-
             $group90 = $group90->sortByDesc('percentage')->values();
-
             $group100 = $group100->sortByDesc('percentage')->values();
 
             // STEP 14: SEND EMAILS
 
             $emailResults = [];
-
             if ($group70->isNotEmpty()) {
-
                 $emailResults[] = $this->sendPercentageEmail(
                     $group70,
                     70,
@@ -344,7 +298,6 @@ class SendPercentageEmail extends Command
             }
 
             if ($group90->isNotEmpty()) {
-
                 $emailResults[] = $this->sendPercentageEmail(
                     $group90,
                     90,
@@ -355,29 +308,23 @@ class SendPercentageEmail extends Command
             }
 
             if ($group100->isNotEmpty()) {
-
                 $emailResults[] = $this->sendPercentageEmail(
                     $group100,
                     100,
                     PercentageEmail100::class,
                     $recipientEmails
                 );
-
             }
 
             // STEP 15: CHECK EMAIL RESULTS
-
             if (in_array(false, $emailResults, true)) {
-
                 Log::error('Some percentage emails failed. Daily lock not created.');
 
                 $this->error('Some emails failed. Daily lock not created.');
-
                 return Command::FAILURE;
             }
 
             // STEP 16: SAVE DAILY LOCK
-
             Cache::put(
                 $lockKey,
                 true,
@@ -385,13 +332,9 @@ class SendPercentageEmail extends Command
             );
 
             // STEP 17: SUMMARY
-
             $this->info('Daily percentage email process completed.');
-
             $this->info('70%-89.99% Devices: ' . $group70->count());
-
             $this->info('90%-99.99% Devices: ' . $group90->count());
-
             $this->info('100% Above Devices: ' . $group100->count());
 
             Log::info('Percentage cron completed successfully.', [
@@ -403,9 +346,7 @@ class SendPercentageEmail extends Command
             ]);
 
             return Command::SUCCESS;
-
         } catch (\Throwable $e) {
-
             Log::error('Percentage cron job failed.', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -415,11 +356,8 @@ class SendPercentageEmail extends Command
             $this->error($e->getMessage());
 
             return Command::FAILURE;
-
         } finally {
-
             $lock->release();
-
         }
     }
 
@@ -428,20 +366,10 @@ class SendPercentageEmail extends Command
     | SEND CONSOLIDATED EMAIL
     |--------------------------------------------------------------------------
     */
-
-    private function sendPercentageEmail(
-        $devices,
-        $emailType,
-        $mailableClass,
-        $recipientEmails
-    ) {
-
+    private function sendPercentageEmail($devices, $emailType, $mailableClass, $recipientEmails) {
         try {
-
             if (empty($recipientEmails)) {
-
                 $this->error('No email recipients configured.');
-
                 return false;
             }
 
@@ -464,9 +392,7 @@ class SendPercentageEmail extends Command
             );
 
             return true;
-
         } catch (\Throwable $e) {
-
             Log::error('Email sending failed.', [
                 'email_type' => $emailType,
                 'error' => $e->getMessage(),
@@ -475,7 +401,6 @@ class SendPercentageEmail extends Command
             $this->error(
                 "Email {$emailType} failed: {$e->getMessage()}"
             );
-
             return false;
         }
     }
