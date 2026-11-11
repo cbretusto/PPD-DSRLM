@@ -37,8 +37,18 @@
                 </li>
                 <br>
                 <li class="nav-header">
-                    <strong>Modules</strong>
+                    <strong>User Manual</strong>
                 </li>
+                <li class="nav-item">
+                    <a href="storage/app/public/user_manual/User Manual - PPD DSRLM.pdf" target="_blank"  class="nav-link">
+                        <i class="nav-icon fa-solid fas fa-file"></i>
+                        <span>PPD DSRLM User Manual</span>
+                    </a>
+                </li><br>
+
+                <li class="nav-header">
+                    <strong>Modules</strong>
+                </li><br>
 
                 @if($userLevel == 2)
                     <li class="nav-item">
