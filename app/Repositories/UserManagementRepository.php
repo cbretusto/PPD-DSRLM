@@ -106,7 +106,9 @@ class UserManagementRepository implements UserManagementInterface{
                 $query->orderBy('name', 'asc');
             }
         ])
+        ->whereNotIn('position', [101, 102, 103])
         ->whereNotNull('classification')
+        ->where('classification', '<>', 0)
         ->where('logdel', 0)
         ->get();
     }
