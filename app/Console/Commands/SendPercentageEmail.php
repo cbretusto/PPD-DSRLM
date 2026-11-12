@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 use App\Models\Device;
+use App\Models\EmailRecipients;
 use App\Mail\PercentageEmail70;
 use App\Mail\PercentageEmail90;
 use App\Mail\PercentageEmail100;
@@ -39,7 +41,6 @@ class SendPercentageEmail extends Command{
 
         if (!$lock->get()) {
             $this->info('Another percentage cron execution is running.');
-
             Log::warning('Percentage cron execution already running.');
 
             return Command::SUCCESS;
@@ -53,13 +54,28 @@ class SendPercentageEmail extends Command{
             ]);
 
             // STEP 2: EMAIL RECIPIENTS
-            $recipientEmails = [
-                'hddeguzman@pricon.ph',
-            ];
+            $recipientEmails = EmailRecipients::where('status', 0)
+                ->where('logdel', 0)
+                ->pluck('email')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            if (empty($recipientEmails)) {
+                $this->error('No active email recipients configured.');
+
+                Log::warning('No active email recipients configured.', [
+                    'date' => $today,
+                ]);
+
+                return Command::FAILURE;
+            }
 
             // STEP 3: GET DEVICES WITH RESET HISTORY
             $devices = Device::query()
                 ->with('device_reset_history_details')
+                ->whereNotIn('classification', [2,3])
                 ->where('status', 0)
                 ->where('logdel', 0)
                 ->get();
@@ -240,7 +256,6 @@ class SendPercentageEmail extends Command{
             });
 
             // STEP 11: INITIALIZE EMAIL GROUPS
-
             $group70 = collect();
             $group90 = collect();
             $group100 = collect();
@@ -285,7 +300,6 @@ class SendPercentageEmail extends Command{
             $group100 = $group100->sortByDesc('percentage')->values();
 
             // STEP 14: SEND EMAILS
-
             $emailResults = [];
             if ($group70->isNotEmpty()) {
                 $emailResults[] = $this->sendPercentageEmail(
