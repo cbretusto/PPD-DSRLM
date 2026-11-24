@@ -1,5 +1,13 @@
 @php
     session_start();
+    $layout = 'layouts.no_access';
+
+    if(isset($_SESSION['ppd_dsrlm_user'])){
+        if($_SESSION['ppd_dsrlm_user'] != 0){
+            $layout = 'layouts.layout';
+        }
+    }
+
     if(isset($_SESSION['ppd_dsrlm_classification'])){
         $userClassification = $_SESSION['ppd_dsrlm_classification'];
     }else{
@@ -12,7 +20,6 @@
         $userLevel = 0;
     }
 
-    $layout = 'layouts.layout';
 @endphp
 @extends($layout)
 @section('title', 'Device')
@@ -49,26 +56,26 @@
     </style>
 
     <style type="text/css">
-    #tableDevice_wrapper.table-loading {
-        pointer-events: none;
-        opacity: 0.5;
-    }
+        #tableDevice_wrapper.table-loading {
+            pointer-events: none;
+            opacity: 0.5;
+        }
 
-    #tableDevice_wrapper.table-loading {
-        position: relative;
-    }
+        #tableDevice_wrapper.table-loading {
+            position: relative;
+        }
 
-    #tableDevice_wrapper.table-loading::after {
-        content: "Loading device data, please wait...";
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.75);
-        font-weight: bold;
-        z-index: 100;
-    }
+        #tableDevice_wrapper.table-loading::after {
+            content: "Loading device data, please wait...";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.75);
+            font-weight: bold;
+            z-index: 100;
+        }
         table.table thead th{
             text-align: center !important;
             vertical-align: middle;

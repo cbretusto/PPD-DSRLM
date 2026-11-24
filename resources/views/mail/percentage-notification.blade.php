@@ -84,9 +84,9 @@
                                         <tr style="background:#172554; color:#ffffff;">
                                             <th align="left">#</th>
                                             <th align="left">Device Code</th>
-                                            <th align="left">Device Code</th>
-                                            <th align="right">Actual SO</th>
-                                            <th align="right">Target SO</th>
+                                            <th align="left">Device Name</th>
+                                            <th align="right">Total Qty</th>
+                                            <th align="right">Tool Life</th>
                                             <th align="right">Progress</th>
                                         </tr>
                                     </thead>

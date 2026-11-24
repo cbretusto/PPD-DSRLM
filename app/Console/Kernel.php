@@ -15,11 +15,28 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // DAILY EMAIL
         $schedule->command('email:percentage')
             ->dailyAt('06:00')
             ->timezone('Asia/Manila')
             ->withoutOverlapping(60)
             ->onOneServer();
+
+        // MONTHLY EMAIL
+        $schedule->command('email:monthly-report')
+            ->monthlyOn(1, '06:00')
+            ->timezone('Asia/Manila')
+            ->withoutOverlapping(60)
+            ->onOneServer();
+            //  ->everyMinute()
+            // ->withoutOverlapping(60);
+
+        // OLD DAILY EMAIL
+        // $schedule->command('email:percentage')
+        //     ->dailyAt('06:00')
+        //     ->timezone('Asia/Manila')
+        //     ->withoutOverlapping(60)
+        //     ->onOneServer();
     }
 
     /**

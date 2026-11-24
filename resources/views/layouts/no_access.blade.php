@@ -24,7 +24,7 @@
                 {{-- <form action="{{ url('https:pornhub.com') }}"> --}}
                     <button type="submit" class="btn btn-warning position-absolute mt-3 ml-3"><i class="fa fa-xl fa-arrow-left"></i>&nbsp; <strong>Go back to RapidX and log-in again</strong></button>
                 </form>
-                <img src="{{ asset('public/images/no_access.jpg') }}" style="height:100%; width:100%;">
+                <img src="{{ asset('public/images/no_access.png') }}" style="height:100%; width:100%;">
             </div>
 
             <!-- JS LINKS -->

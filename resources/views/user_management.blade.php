@@ -1,11 +1,12 @@
 @php
     session_start();
-    $layout = 'layouts.layout';
-    // if(isset($_SESSION['invoice_revision_request_id'])){
-    //     $layout = 'layouts.layout';
-    // }else{
-    //     $layout = 'layouts.no_access';
-    // }
+    $layout = 'layouts.no_access';
+
+    if(isset($_SESSION['ppd_dsrlm_user'])){
+        if($_SESSION['ppd_dsrlm_user'] != 0){
+            $layout = 'layouts.layout';
+        }
+    }
 @endphp
 @extends($layout)
 @section('title', 'User Managemnet')

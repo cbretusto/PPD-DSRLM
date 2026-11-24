@@ -1,7 +1,14 @@
 @php
     session_start();
-    $layout = 'layouts.layout';
+    $layout = 'layouts.no_access';
+
+    if(isset($_SESSION['ppd_dsrlm_user'])){
+        if($_SESSION['ppd_dsrlm_user'] != 0){
+            $layout = 'layouts.layout';
+        }
+    }
 @endphp
+
 @extends($layout)
 @section('title', 'Setting')
 @section('content_page')
